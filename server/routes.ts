@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { insertPublicationSchema } from "@shared/schema";
 
@@ -19,8 +19,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: "Username already exists" });
     }
 
+    const hashedPassword = await hashPassword(req.body.password);
     const user = await storage.createUser({
       ...req.body,
+      password: hashedPassword,
       isAdmin: true,
     });
 
