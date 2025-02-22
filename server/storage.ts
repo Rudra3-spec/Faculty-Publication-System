@@ -1,14 +1,17 @@
-import { User, InsertUser, Publication, InsertPublication } from "@shared/schema";
+import { User, InsertUser, Publication, InsertPublication, users, publications } from "@shared/schema";
+import { db } from "./db";
+import { eq, ilike, or } from "drizzle-orm";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Publications
   createPublication(publication: InsertPublication & { userId: number }): Promise<Publication>;
   getPublication(id: number): Promise<Publication | undefined>;
@@ -21,87 +24,88 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private publications: Map<number, Publication>;
-  private currentUserId: number;
-  private currentPublicationId: number;
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.publications = new Map();
-    this.currentUserId = 1;
-    this.currentPublicationId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user = { ...insertUser, id, isAdmin: false };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async createPublication(publication: InsertPublication & { userId: number }): Promise<Publication> {
-    const id = this.currentPublicationId++;
-    const newPublication = {
-      ...publication,
-      id,
-      createdAt: new Date(),
-    };
-    this.publications.set(id, newPublication);
+    const [newPublication] = await db
+      .insert(publications)
+      .values({
+        ...publication,
+        createdAt: new Date(),
+      })
+      .returning();
     return newPublication;
   }
 
   async getPublication(id: number): Promise<Publication | undefined> {
-    return this.publications.get(id);
+    const [publication] = await db
+      .select()
+      .from(publications)
+      .where(eq(publications.id, id));
+    return publication;
   }
 
   async getPublicationsByUser(userId: number): Promise<Publication[]> {
-    return Array.from(this.publications.values()).filter(
-      (pub) => pub.userId === userId,
-    );
+    return await db
+      .select()
+      .from(publications)
+      .where(eq(publications.userId, userId));
   }
 
   async getAllPublications(): Promise<Publication[]> {
-    return Array.from(this.publications.values());
+    return await db.select().from(publications);
   }
 
   async updatePublication(id: number, publication: Partial<InsertPublication>): Promise<Publication> {
-    const existing = await this.getPublication(id);
-    if (!existing) throw new Error("Publication not found");
-    
-    const updated = { ...existing, ...publication };
-    this.publications.set(id, updated);
+    const [updated] = await db
+      .update(publications)
+      .set(publication)
+      .where(eq(publications.id, id))
+      .returning();
     return updated;
   }
 
   async deletePublication(id: number): Promise<void> {
-    this.publications.delete(id);
+    await db.delete(publications).where(eq(publications.id, id));
   }
 
   async searchPublications(query: string): Promise<Publication[]> {
     const lowercaseQuery = query.toLowerCase();
-    return Array.from(this.publications.values()).filter(
-      (pub) =>
-        pub.title.toLowerCase().includes(lowercaseQuery) ||
-        pub.authors.toLowerCase().includes(lowercaseQuery) ||
-        pub.keywords.toLowerCase().includes(lowercaseQuery)
-    );
+    const results = await db
+      .select()
+      .from(publications)
+      .where(
+        or(
+          ilike(publications.title, `%${lowercaseQuery}%`),
+          ilike(publications.authors, `%${lowercaseQuery}%`),
+          ilike(publications.keywords, `%${lowercaseQuery}%`)
+        )
+      );
+    return results;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
