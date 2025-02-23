@@ -73,9 +73,13 @@ export default function PublicationForm({
 
   const mutation = useMutation({
     mutationFn: async (data: InsertPublication) => {
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+
       const publicationData = {
         ...data,
-        userId: user?.id,
+        userId: user.id,
       };
 
       const res = await apiRequest(
@@ -92,15 +96,20 @@ export default function PublicationForm({
       return res.json();
     },
     onSuccess: () => {
+      // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/publications/search"] });
       queryClient.invalidateQueries({ queryKey: ["/api/publications/user", user?.id] });
+
       toast({
         title: `Publication ${publicationId ? "updated" : "added"} successfully`,
       });
+
+      form.reset(); // Reset form after successful submission
       onSuccess?.();
     },
     onError: (error: Error) => {
+      console.error("Publication mutation error:", error);
       toast({
         title: "Error saving publication",
         description: error.message,
@@ -223,10 +232,10 @@ export default function PublicationForm({
               <FormItem>
                 <FormLabel>DOI</FormLabel>
                 <FormControl>
-                  <Input 
-                    {...field} 
+                  <Input
+                    {...field}
                     value={field.value || ""}
-                    placeholder="e.g., 10.1000/xyz123" 
+                    placeholder="e.g., 10.1000/xyz123"
                   />
                 </FormControl>
                 <FormDescription>
@@ -275,10 +284,10 @@ export default function PublicationForm({
               <FormItem>
                 <FormLabel>Research Area</FormLabel>
                 <FormControl>
-                  <Input 
-                    {...field} 
+                  <Input
+                    {...field}
                     value={field.value || ""}
-                    placeholder="e.g., Computer Science, Machine Learning" 
+                    placeholder="e.g., Computer Science, Machine Learning"
                   />
                 </FormControl>
                 <FormDescription>
