@@ -19,8 +19,8 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Configure PDF.js worker with CDN URL
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
+    // Configure PDF.js worker with CDN URL matching our installed version
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js`;
   }, []);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
