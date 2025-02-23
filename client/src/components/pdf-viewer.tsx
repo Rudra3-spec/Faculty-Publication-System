@@ -6,8 +6,11 @@ import { Loader2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-reac
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
-// Set worker source using local file from node_modules
-pdfjs.GlobalWorkerOptions.workerSrc = `/node_modules/pdfjs-dist/build/pdf.worker.min.js`;
+// Configure the worker with proper Vite asset handling
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url
+).href;
 
 interface PDFViewerProps {
   url: string;
