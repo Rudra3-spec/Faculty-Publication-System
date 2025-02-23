@@ -137,6 +137,8 @@ function RegisterForm() {
       password: "",
       name: "",
       email: "",
+      department: "",
+      designation: "",
     },
   });
 
@@ -214,7 +216,33 @@ function RegisterForm() {
                 <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter your full name" />
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="department"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Department</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Optional: Enter your department" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="designation"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Designation</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Optional: Enter your designation" />
               </FormControl>
               <FormMessage />
             </FormItem>
