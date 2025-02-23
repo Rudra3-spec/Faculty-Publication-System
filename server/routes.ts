@@ -4,9 +4,63 @@ import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { insertPublicationSchema, updateUserSchema } from "@shared/schema";
 import { generatePublicationSummary } from "./utils/summary";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import express from "express";
+
+// Configure multer for handling file uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: "./uploads/profiles",
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only JPEG, PNG and WebP are allowed."));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
+
+// Ensure uploads directory exists
+if (!fs.existsSync("./uploads/profiles")) {
+  fs.mkdirSync("./uploads/profiles", { recursive: true });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+
+  // Add photo upload route
+  app.post("/api/user/photo", upload.single("photo"), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    try {
+      // Update user's profile picture URL
+      const photoUrl = `/uploads/profiles/${req.file.filename}`;
+      const user = await storage.updateUser(req.user!.id, {
+        profilePicture: photoUrl,
+      });
+
+      res.json(user);
+    } catch (error) {
+      // Clean up uploaded file if update fails
+      fs.unlinkSync(req.file.path);
+      res.status(500).json({ message: "Failed to update profile picture" });
+    }
+  });
+
+  // Serve uploaded files
+  app.use("/uploads", express.static("uploads"));
 
   // Admin Registration
   app.post("/api/admin/register", async (req, res) => {

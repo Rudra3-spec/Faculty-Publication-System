@@ -88,7 +88,7 @@ export default function HomePage() {
             <PublicationList 
               publications={publications}
               isLoading={isLoading}
-              showActions={user?.isAdmin}
+              showActions={!!user?.isAdmin}
             />
           </CardContent>
         </Card>

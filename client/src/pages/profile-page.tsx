@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, FileText, Download, Edit, Book, BookOpen, Filter } from "lucide-react";
+import { Plus, ArrowLeft, FileText, Download, Edit, Book, BookOpen, Filter, Camera, Link2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   Select,
@@ -38,6 +37,9 @@ import PublicationList from "@/components/publication-list";
 import { Publication } from "@shared/schema";
 import { Link } from "wouter";
 import ImpactVisualization from "@/components/impact-visualization";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { SiGooglescholar, SiLinkedin, SiResearchgate, SiX } from "react-icons/si";
+
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -49,6 +51,7 @@ export default function ProfilePage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [summaryFormat, setSummaryFormat] = useState<SummaryFormat>("PDF");
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilter>("year");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const form = useForm<UpdateUser>({
     resolver: zodResolver(updateUserSchema),
@@ -59,8 +62,47 @@ export default function ProfilePage() {
       bio: user?.bio || "",
       researchInterests: user?.researchInterests || "",
       contactEmail: user?.contactEmail || "",
+      linkedinUrl: user?.linkedinUrl || "",
+      googleScholarUrl: user?.googleScholarUrl || "",
+      researchGateUrl: user?.researchGateUrl || "",
+      orcidId: user?.orcidId || "",
+      twitterUrl: user?.twitterUrl || ""
     },
   });
+
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const res = await fetch("/api/user/photo", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Failed to upload photo");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({ title: "Profile photo updated" });
+      setIsUploadingPhoto(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to upload photo",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsUploadingPhoto(false);
+    },
+  });
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploadingPhoto(true);
+      uploadPhotoMutation.mutate(file);
+    }
+  };
 
   // Update the publications query
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
@@ -113,12 +155,38 @@ export default function ProfilePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Profile Information */}
             <Card className="md:col-span-2">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl font-bold">{user?.name}</CardTitle>
-                  <CardDescription>
-                    {user?.designation} at {user?.department}
-                  </CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                      <AvatarFallback>
+                        {user?.name?.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute bottom-0 right-0">
+                      <label
+                        htmlFor="photo-upload"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-primary hover:bg-primary/90 cursor-pointer"
+                      >
+                        <Camera className="h-4 w-4 text-primary-foreground" />
+                        <input
+                          id="photo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePhotoUpload}
+                          disabled={isUploadingPhoto}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl font-bold">{user?.name}</CardTitle>
+                    <CardDescription>
+                      {user?.designation} at {user?.department}
+                    </CardDescription>
+                  </div>
                 </div>
                 <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
                   <Edit className="h-4 w-4" />
@@ -206,6 +274,91 @@ export default function ProfilePage() {
                           </FormItem>
                         )}
                       />
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Social Media & Professional Links</h3>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <FormField
+                            control={form.control}
+                            name="linkedinUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiLinkedin className="h-4 w-4" />
+                                  LinkedIn
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://linkedin.com/in/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="googleScholarUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiGooglescholar className="h-4 w-4" />
+                                  Google Scholar
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://scholar.google.com/..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="researchGateUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiResearchgate className="h-4 w-4" />
+                                  ResearchGate
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://researchgate.net/profile/..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="orcidId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Link2 className="h-4 w-4" />
+                                  ORCID ID
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="0000-0000-0000-0000" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="twitterUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiX className="h-4 w-4" />
+                                  Twitter
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://twitter.com/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
                       <div className="flex justify-end gap-2">
                         <Button
                           type="button"
@@ -224,7 +377,7 @@ export default function ProfilePage() {
                     </form>
                   </Form>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {user?.bio && (
                       <div>
                         <h3 className="font-semibold mb-2">About</h3>
@@ -241,6 +394,72 @@ export default function ProfilePage() {
                       <div>
                         <h3 className="font-semibold mb-2">Contact</h3>
                         <p className="text-muted-foreground">{user.contactEmail}</p>
+                      </div>
+                    )}
+                    {(user?.linkedinUrl ||
+                      user?.googleScholarUrl ||
+                      user?.researchGateUrl ||
+                      user?.orcidId ||
+                      user?.twitterUrl) && (
+                      <div>
+                        <h3 className="font-semibold mb-3">Professional Links</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {user?.linkedinUrl && (
+                            <a
+                              href={user.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiLinkedin className="h-4 w-4" />
+                              LinkedIn
+                            </a>
+                          )}
+                          {user?.googleScholarUrl && (
+                            <a
+                              href={user.googleScholarUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiGooglescholar className="h-4 w-4" />
+                              Google Scholar
+                            </a>
+                          )}
+                          {user?.researchGateUrl && (
+                            <a
+                              href={user.researchGateUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiResearchgate className="h-4 w-4" />
+                              ResearchGate
+                            </a>
+                          )}
+                          {user?.orcidId && (
+                            <a
+                              href={`https://orcid.org/${user.orcidId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <Link2 className="h-4 w-4" />
+                              ORCID
+                            </a>
+                          )}
+                          {user?.twitterUrl && (
+                            <a
+                              href={user.twitterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiX className="h-4 w-4" />
+                              Twitter
+                            </a>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
