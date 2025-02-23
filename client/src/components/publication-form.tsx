@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Upload } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface PublicationFormProps {
   publication?: InsertPublication;
@@ -52,6 +53,7 @@ export default function PublicationForm({
   onSuccess
 }: PublicationFormProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const form = useForm<InsertPublication>({
     resolver: zodResolver(insertPublicationSchema),
     defaultValues: publication || {
@@ -64,16 +66,12 @@ export default function PublicationForm({
       abstract: "",
       keywords: "",
       pdfUrl: "",
+      researchArea: "",
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (data: InsertPublication) => {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value.toString());
-      });
-
       const res = await apiRequest(
         publicationId ? "PUT" : "POST",
         publicationId ? `/api/publications/${publicationId}` : "/api/publications",
@@ -83,6 +81,7 @@ export default function PublicationForm({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/publications/user", user?.id] });
       toast({
         title: `Publication ${publicationId ? "updated" : "added"} successfully`,
       });
@@ -124,7 +123,7 @@ export default function PublicationForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type <span className="text-destructive">*</span></FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
@@ -151,7 +150,7 @@ export default function PublicationForm({
                 <FormLabel>Year <span className="text-destructive">*</span></FormLabel>
                 <Select 
                   onValueChange={(value) => field.onChange(parseInt(value))} 
-                  defaultValue={field.value.toString()}
+                  value={field.value.toString()}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -253,8 +252,25 @@ export default function PublicationForm({
 
         <FormField
           control={form.control}
-          name="pdfUrl"
+          name="researchArea"
           render={({ field }) => (
+            <FormItem>
+              <FormLabel>Research Area</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="e.g., Computer Science, Machine Learning" />
+              </FormControl>
+              <FormDescription>
+                Main research area for this publication
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="pdfUrl"
+          render={({ field: { value, onChange, ...field } }) => (
             <FormItem>
               <FormLabel>PDF Document</FormLabel>
               <FormControl>
@@ -266,18 +282,18 @@ export default function PublicationForm({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        // TODO: Implement file upload
-                        field.onChange(URL.createObjectURL(file));
+                        onChange(URL.createObjectURL(file));
                       }
                     }}
+                    {...field}
                   />
-                  {field.value && (
+                  {value && (
                     <Button 
                       type="button" 
                       variant="outline"
                       size="icon"
                       className="shrink-0"
-                      onClick={() => field.onChange("")}
+                      onClick={() => onChange("")}
                     >
                       <Upload className="h-4 w-4" />
                     </Button>

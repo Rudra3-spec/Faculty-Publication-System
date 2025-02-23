@@ -155,7 +155,7 @@ export default function ProfilePage() {
                 Add Publication
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Publication</DialogTitle>
               </DialogHeader>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
           </Dialog>
         </div>
 
-        <PublicationList 
+        <PublicationList
           publications={publications}
           isLoading={isLoading}
           showActions={true}
