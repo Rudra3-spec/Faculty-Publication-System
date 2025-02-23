@@ -691,7 +691,7 @@ export default function ProfilePage() {
                             </FormItem>
                           )}
                         />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="officeHours"
@@ -757,221 +757,6 @@ export default function ProfilePage() {
                         <p className="text-muted-foreground">{user.contactEmail}</p>
                       </div>
                     )}
-                    {(user?.linkedinUrl ||
-                      user?.googleScholarUrl ||
-                      user?.researchGateUrl ||
-                      user?.twitterUrl ||
-                      user?.facebookUrl ||
-                      user?.instagramUrl) && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Professional Links</h3>
-                        <div className="flex flex-wrap gap-3">
-                          {user?.linkedinUrl && (
-                            <a
-                              href={user.linkedinUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiLinkedin className="h-4 w-4" />
-                              LinkedIn
-                            </a>
-                          )}
-                          {user?.googleScholarUrl && (
-                            <a
-                              href={user.googleScholarUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiGooglescholar className="h-4 w-4" />
-                              Google Scholar
-                            </a>
-                          )}
-                          {user?.researchGateUrl && (
-                            <a
-                              href={user.researchGateUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiResearchgate className="h-4 w-4" />
-                              ResearchGate
-                            </a>
-                          )}
-                          {user?.twitterUrl && (
-                            <a
-                              href={user.twitterUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiX className="h-4 w-4" />
-                              Twitter
-                            </a>
-                          )}
-                          {user?.facebookUrl && (
-                            <a
-                              href={user.facebookUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiFacebook className="h-4 w-4" />
-                              Facebook
-                            </a>
-                          )}
-                          {user?.instagramUrl && (
-                            <a
-                              href={user.instagramUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <SiInstagram className="h-4 w-4" />
-                              Instagram
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    {/* Social Media Links */}
-                    {(user?.linkedinUrl ||
-                      user?.googleScholarUrl ||
-                      user?.researchGateUrl ||
-                      user?.twitterUrl ||
-                      user?.facebookUrl ||
-                      user?.instagramUrl) && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Professional & Social Media Links</h3>
-                        <div className="flex flex-wrap gap-3">
-                          {user?.linkedinUrl && (
-                            <a
-                              href={user.linkedinUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiLinkedin className="h-4 w-4" />
-                              LinkedIn
-                            </a>
-                          )}
-                          {user?.googleScholarUrl && (
-                            <a
-                              href={user.googleScholarUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiGooglescholar className="h-4 w-4" />
-                              Google Scholar
-                            </a>
-                          )}
-                          {user?.researchGateUrl && (
-                            <a
-                              href={user.researchGateUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiResearchgate className="h-4 w-4" />
-                              ResearchGate
-                            </a>
-                          )}
-                          {user?.twitterUrl && (
-                            <a
-                              href={user.twitterUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiX className="h-4 w-4" />
-                              Twitter
-                            </a>
-                          )}
-                          {user?.facebookUrl && (
-                            <a
-                              href={user.facebookUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiFacebook className="h-4 w-4" />
-                              Facebook
-                            </a>
-                          )}
-                          {user?.instagramUrl && (
-                            <a
-                              href={user.instagramUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                            >
-                              <SiInstagram className="h-4 w-4" />
-                              Instagram
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    {user?.college && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Current Institution</h3>
-                        <p className="text-muted-foreground">{user.college}</p>
-                        {user?.school && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Department/School: {user.school}
-                          </p>
-                        )}
-                        {(user?.currentCity || user?.currentState) && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Location: {[user.currentCity, user.currentState].filter(Boolean).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {user?.almaCollege && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Alma Mater</h3>
-                        <p className="text-muted-foreground">{user.almaCollege}</p>
-                        {user?.almaSchool && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            School: {user.almaSchool}
-                          </p>
-                        )}
-                        {(user?.almaCity || user?.almaState) && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Location: {[user.almaCity, user.almaState].filter(Boolean).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {user?.education && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Education</h3>
-                        <p className="text-muted-foreground whitespace-pre-line">{user.education}</p>
-                      </div>
-                    )}
-                    {user?.awards && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Awards & Honors</h3>
-                        <p className="text-muted-foreground whitespace-pre-line">{user.awards}</p>
-                      </div>
-                    )}
-                    <div className="grid grid-cols1 md:grid-cols-2 gap-4">
-                      {user?.officeHours && (
-                        <div>
-                          <h3 className="font-semibold mb-2">Office Hours</h3>
-                          <p className="text-muted-foreground">{user.officeHours}</p>
-                        </div>
-                      )}
-                      {user?.officeLocation && (
-                        <div>
-                          <h3 className="font-semibold mb-2">Office Location</h3>
-                          <p className="text-muted-foreground">{user.officeLocation}</p>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 )}
               </CardContent>
@@ -985,43 +770,43 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Format</h3>
-                  <Select
-                    value={summaryFormat}
-                    onValueChange={(value) => setSummaryFormat(value as SummaryFormat)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PDF">PDF Document</SelectItem>
-                      <SelectItem value="Word">Word Document</SelectItem>
-                      <SelectItem value="Web">Web Page</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center gap-4">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Format</h3>
+                    <Select
+                      value={summaryFormat}
+                      onValueChange={(value) => setSummaryFormat(value as SummaryFormat)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PDF">PDF</SelectItem>
+                        <SelectItem value="Word">Word</SelectItem>
+                        <SelectItem value="Web">Web</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Group By</h3>
+                    <Select
+                      value={summaryFilter}
+                      onValueChange={(value) => setSummaryFilter(value as SummaryFilter)}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Group By" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="year">Publication Year</SelectItem>
+                        <SelectItem value="type">Publication Type</SelectItem>
+                        <SelectItem value="area">Research Area</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Group By</h3>
-                  <Select
-                    value={summaryFilter}
-                    onValueChange={(value) => setSummaryFilter(value as SummaryFilter)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="year">Publication Year</SelectItem>
-                      <SelectItem value="type">Publication Type</SelectItem>
-                      <SelectItem value="area">Research Area</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <Button
-                  className="w-full"
                   onClick={handleGenerateSummary}
+                  disabled={isLoading}
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Generate Summary
@@ -1032,86 +817,155 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      {(user?.linkedinUrl ||
+        user?.googleScholarUrl ||
+        user?.researchGateUrl ||
+        user?.twitterUrl ||
+        user?.facebookUrl ||
+        user?.instagramUrl) && (
+        <div className="container mx-auto px-4 py-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Publications
-              </CardTitle>
-              <Book className="h-4 w-4 text-muted-foreground" />
+            <CardHeader>
+              <CardTitle className="text-lg">Professional & Social Media Links</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalPublications}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Citations
-              </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalCitations}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flexflex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Research Areas
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{researchAreas.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Latest Update
-              </CardTitle>
-              <Filter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground">
-                {publications[0]?.updatedAt ? new Date(publications[0].updatedAt).toLocaleDateString() : 'No publications'}
+              <div className="flex flex-wrap gap-4">
+                {user?.linkedinUrl && (
+                  <a
+                    href={user.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiLinkedin className="h-5 w-5 text-[#0A66C2]" />
+                    <span className="text-sm font-medium">LinkedIn</span>
+                  </a>
+                )}
+                {user?.googleScholarUrl && (
+                  <a
+                    href={user.googleScholarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiGooglescholar className="h-5 w-5 text-[#4285F4]" />
+                    <span className="text-sm font-medium">Google Scholar</span>
+                  </a>
+                )}
+                {user?.researchGateUrl && (
+                  <a
+                    href={user.researchGateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiResearchgate className="h-5 w-5 text-[#00CCBB]" />
+                    <span className="text-sm font-medium">ResearchGate</span>
+                  </a>
+                )}
+                {user?.twitterUrl && (
+                  <a
+                    href={user.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiX className="h-5 w-5" />
+                    <span className="text-sm font-medium">Twitter</span>
+                  </a>
+                )}
+                {user?.facebookUrl && (
+                  <a
+                    href={user.facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiFacebook className="h-5 w-5 text-[#1877F2]" />
+                    <span className="text-sm font-medium">Facebook</span>
+                  </a>
+                )}
+                {user?.instagramUrl && (
+                  <a
+                    href={user.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiInstagram className="h-5 w-5 text-[#E4405F]" />
+                    <span className="text-sm font-medium">Instagram</span>
+                  </a>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
+      )}
 
-        <div className="mt-8">
-          <ImpactVisualization publications={publications} />
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="md:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div>
+                <CardTitle className="text-lg font-semibold">Publications</CardTitle>
+                <CardDescription>
+                  Manage and showcase your research publications
+                </CardDescription>
+              </div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Publication
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add New Publication</DialogTitle>
+                  </DialogHeader>
+                  <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <PublicationList 
+                publications={publications}
+                isLoading={isLoading}
+                showActions
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Research Areas
+              </CardTitle>
+              <Book className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {researchAreas.length > 0 ? (
+                <div className="space-y-2">
+                  {researchAreas.map((area) => (
+                    <div
+                      key={area}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span>{area}</span>
+                      <span className="text-muted-foreground">
+                        {publications.filter((p) => p.researchArea === area).length}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No research areas defined yet
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
-
-        <div className="flex justify-between items-center mb-6 mt-8">
-          <h2 className="text-xl font-semibold">Publications</h2>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Publication
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add New Publication</DialogTitle>
-              </DialogHeader>
-              <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <PublicationList
-          publications={publications}
-          isLoading={isLoading}
-          showActions={true}
-        />
       </main>
     </div>
   );
