@@ -39,7 +39,19 @@ import { Link } from "wouter";
 import ImpactVisualization from "@/components/impact-visualization";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SiGooglescholar, SiLinkedin, SiResearchgate, SiX, SiFacebook, SiInstagram } from "react-icons/si";
-
+import { COLLEGES, CITIES, STATES } from "@/components/institution-suggestions";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -77,6 +89,10 @@ export default function ProfilePage() {
       school: user?.school || "",
       almaCollege: user?.almaCollege || "",
       almaSchool: user?.almaSchool || "",
+      currentCity: user?.currentCity || "",
+      currentState: user?.currentState || "",
+      almaCity: user?.almaCity || "",
+      almaState: user?.almaState || "",
     },
   });
 
@@ -114,13 +130,11 @@ export default function ProfilePage() {
     }
   };
 
-  // Update the publications query
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
     queryKey: ["/api/publications/user", user?.id],
-    enabled: !!user?.id, // Only run query when user ID is available
+    enabled: !!user?.id,
   });
 
-  // Calculate statistics
   const totalPublications = publications.length;
   const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations || 0), 0);
   const researchAreas = [...new Set(publications.map(pub => pub.researchArea || 'Uncategorized'))];
@@ -163,7 +177,6 @@ export default function ProfilePage() {
           </Button>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Profile Information */}
             <Card className="md:col-span-2">
               <CardHeader className="flex flex-row items-start justify-between">
                 <div className="flex items-center gap-4">
@@ -392,11 +405,37 @@ export default function ProfilePage() {
                             control={form.control}
                             name="college"
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className="flex flex-col">
                                 <FormLabel>Current Institution</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="Institution where you work" />
-                                </FormControl>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        placeholder="Institution where you work"
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[400px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search institutions..." />
+                                      <CommandEmpty>No institution found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {COLLEGES.map((college) => (
+                                          <CommandItem
+                                            key={college}
+                                            onSelect={() => {
+                                              form.setValue("college", college);
+                                            }}
+                                          >
+                                            {college}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -415,18 +454,115 @@ export default function ProfilePage() {
                             )}
                           />
                         </div>
-
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="currentCity"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel>City</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Select city" />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[200px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search cities..." />
+                                      <CommandEmpty>No city found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {CITIES.map((city) => (
+                                          <CommandItem
+                                            key={city}
+                                            onSelect={() => {
+                                              form.setValue("currentCity", city);
+                                            }}
+                                          >
+                                            {city}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="currentState"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel>State</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Select state" />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[200px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search states..." />
+                                      <CommandEmpty>No state found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {STATES.map((state) => (
+                                          <CommandItem
+                                            key={state}
+                                            onSelect={() => {
+                                              form.setValue("currentState", state);
+                                            }}
+                                          >
+                                            {state}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                         <h3 className="font-medium">Educational Background</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="almaCollege"
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className="flex flex-col">
                                 <FormLabel>Alma Mater Institution</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="Institution where you studied" />
-                                </FormControl>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        placeholder="Institution where you studied"
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[400px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search institutions..." />
+                                      <CommandEmpty>No institution found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {COLLEGES.map((college) => (
+                                          <CommandItem
+                                            key={college}
+                                            onSelect={() => {
+                                              form.setValue("almaCollege", college);
+                                            }}
+                                          >
+                                            {college}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -445,7 +581,78 @@ export default function ProfilePage() {
                             )}
                           />
                         </div>
-
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="almaCity"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel>City</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Select city" />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[200px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search cities..." />
+                                      <CommandEmpty>No city found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {CITIES.map((city) => (
+                                          <CommandItem
+                                            key={city}
+                                            onSelect={() => {
+                                              form.setValue("almaCity", city);
+                                            }}
+                                          >
+                                            {city}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="almaState"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel>State</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Select state" />
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[200px] p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search states..." />
+                                      <CommandEmpty>No state found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {STATES.map((state) => (
+                                          <CommandItem
+                                            key={state}
+                                            onSelect={() => {
+                                              form.setValue("almaState", state);
+                                            }}
+                                          >
+                                            {state}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                         <FormField
                           control={form.control}
                           name="education"
@@ -472,7 +679,6 @@ export default function ProfilePage() {
                             </FormItem>
                           )}
                         />
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
@@ -487,7 +693,6 @@ export default function ProfilePage() {
                               </FormItem>
                             )}
                           />
-
                           <FormField
                             control={form.control}
                             name="officeLocation"
@@ -627,6 +832,11 @@ export default function ProfilePage() {
                             Department/School: {user.school}
                           </p>
                         )}
+                        {(user?.currentCity || user?.currentState) && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Location: {[user.currentCity, user.currentState].filter(Boolean).join(", ")}
+                          </p>
+                        )}
                       </div>
                     )}
                     {user?.almaCollege && (
@@ -636,6 +846,11 @@ export default function ProfilePage() {
                         {user?.almaSchool && (
                           <p className="text-sm text-muted-foreground mt-1">
                             School: {user.almaSchool}
+                          </p>
+                        )}
+                        {(user?.almaCity || user?.almaState) && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Location: {[user.almaCity, user.almaState].filter(Boolean).join(", ")}
                           </p>
                         )}
                       </div>
@@ -671,7 +886,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Summary Generation */}
             <Card>
               <CardHeader>
                 <CardTitle>Generate Summary</CardTitle>
@@ -728,7 +942,6 @@ export default function ProfilePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Dashboard Stats */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -755,7 +968,7 @@ export default function ProfilePage() {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flexflex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Research Areas
               </CardTitle>
@@ -781,7 +994,6 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* Impact Visualization */}
         <div className="mt-8">
           <ImpactVisualization publications={publications} />
         </div>

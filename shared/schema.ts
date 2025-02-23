@@ -27,12 +27,16 @@ export const users = pgTable("users", {
   awards: text("awards"),
   officeHours: text("office_hours"),
   officeLocation: text("office_location"),
-  // Academic background
+  // Current institution
   college: text("college"), // Current institution where working
   school: text("school"), // Current school/department where working
+  currentCity: text("current_city"),
+  currentState: text("current_state"),
   // Educational background
   almaCollege: text("alma_college"), // Institution where studied
   almaSchool: text("alma_school"), // School where studied
+  almaCity: text("alma_city"),
+  almaState: text("alma_state"),
 });
 
 export const publications = pgTable("publications", {
@@ -76,8 +80,12 @@ const userBaseSchema = {
   officeLocation: z.string().optional(),
   college: z.string().optional(),
   school: z.string().optional(),
+  currentCity: z.string().optional(),
+  currentState: z.string().optional(),
   almaCollege: z.string().optional(),
   almaSchool: z.string().optional(),
+  almaCity: z.string().optional(),
+  almaState: z.string().optional(),
 };
 
 export const insertUserSchema = z.object(userBaseSchema);
