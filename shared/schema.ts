@@ -10,11 +10,16 @@ export const users = pgTable("users", {
   department: text("department").notNull(),
   designation: text("designation").notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
+  bio: text("bio"),
+  researchInterests: text("research_interests"),
+  contactEmail: text("contact_email"),
+  profilePicture: text("profile_picture"),
 });
 
 export const publications = pgTable("publications", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
+  type: text("type").notNull(),
   authors: text("authors").notNull(),
   venue: text("venue").notNull(), // Journal/Conference name
   year: integer("year").notNull(),
@@ -23,19 +28,34 @@ export const publications = pgTable("publications", {
   keywords: text("keywords").notNull(),
   pdfUrl: text("pdf_url"),
   userId: integer("user_id").notNull(),
+  citations: integer("citations").default(0),
+  researchArea: text("research_area"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
-  department: true,
-  designation: true,
-});
+const userBaseSchema = {
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(1, "Name is required"),
+  department: z.string().min(1, "Department is required"),
+  designation: z.string().min(1, "Designation is required"),
+  bio: z.string().optional(),
+  researchInterests: z.string().optional(),
+  contactEmail: z.string().email().optional(),
+  profilePicture: z.string().optional(),
+};
+
+export const insertUserSchema = z.object(userBaseSchema);
+
+export const updateUserSchema = z.object({
+  ...userBaseSchema,
+  password: z.string().min(6, "Password must be at least 6 characters").optional(),
+}).partial();
 
 export const insertPublicationSchema = createInsertSchema(publications).pick({
   title: true,
+  type: true,
   authors: true,
   venue: true,
   year: true,
@@ -43,9 +63,11 @@ export const insertPublicationSchema = createInsertSchema(publications).pick({
   abstract: true,
   keywords: true,
   pdfUrl: true,
+  researchArea: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertPublication = z.infer<typeof insertPublicationSchema>;
 export type Publication = typeof publications.$inferSelect;

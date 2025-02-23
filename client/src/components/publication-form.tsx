@@ -12,16 +12,39 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
 interface PublicationFormProps {
   publication?: InsertPublication;
   publicationId?: number;
   onSuccess?: () => void;
 }
+
+const PUBLICATION_TYPES = [
+  "Journal Article",
+  "Conference Paper",
+  "Book Chapter",
+  "Workshop Paper",
+  "Technical Report",
+  "Other"
+];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from(
+  { length: 30 },
+  (_, i) => CURRENT_YEAR - i
+);
 
 export default function PublicationForm({ 
   publication,
@@ -35,7 +58,8 @@ export default function PublicationForm({
       title: "",
       authors: "",
       venue: "",
-      year: new Date().getFullYear(),
+      year: CURRENT_YEAR,
+      type: "Journal Article",
       doi: "",
       abstract: "",
       keywords: "",
@@ -45,6 +69,11 @@ export default function PublicationForm({
 
   const mutation = useMutation({
     mutationFn: async (data: InsertPublication) => {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value.toString());
+      });
+
       const res = await apiRequest(
         publicationId ? "PUT" : "POST",
         publicationId ? `/api/publications/${publicationId}` : "/api/publications",
@@ -72,46 +101,43 @@ export default function PublicationForm({
     <Form {...form}>
       <form 
         onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
-        className="space-y-4"
+        className="space-y-6"
       >
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} className="font-medium" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="authors"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Authors (comma separated)</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="venue"
+            name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Journal/Conference Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <FormLabel>Type <span className="text-destructive">*</span></FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {PUBLICATION_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -122,14 +148,24 @@ export default function PublicationForm({
             name="year"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Year</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  />
-                </FormControl>
+                <FormLabel>Year <span className="text-destructive">*</span></FormLabel>
+                <Select 
+                  onValueChange={(value) => field.onChange(parseInt(value))} 
+                  defaultValue={field.value.toString()}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {YEARS.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -138,10 +174,27 @@ export default function PublicationForm({
 
         <FormField
           control={form.control}
-          name="doi"
+          name="authors"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>DOI (optional)</FormLabel>
+              <FormLabel>Authors <span className="text-destructive">*</span></FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter authors' names separated by commas
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="venue"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Journal/Conference Name <span className="text-destructive">*</span></FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -152,12 +205,29 @@ export default function PublicationForm({
 
         <FormField
           control={form.control}
+          name="doi"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>DOI</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="e.g., 10.1000/xyz123" />
+              </FormControl>
+              <FormDescription>
+                Digital Object Identifier (optional)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="abstract"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Abstract</FormLabel>
+              <FormLabel>Abstract <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Textarea {...field} rows={4} />
+                <Textarea {...field} rows={5} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -169,10 +239,13 @@ export default function PublicationForm({
           name="keywords"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Keywords (comma separated)</FormLabel>
+              <FormLabel>Keywords <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} placeholder="e.g., machine learning, artificial intelligence, neural networks" />
               </FormControl>
+              <FormDescription>
+                Enter keywords separated by commas
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -183,10 +256,37 @@ export default function PublicationForm({
           name="pdfUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>PDF URL (optional)</FormLabel>
+              <FormLabel>PDF Document</FormLabel>
               <FormControl>
-                <Input {...field} type="url" />
+                <div className="flex gap-4 items-center">
+                  <Input 
+                    type="file" 
+                    accept=".pdf"
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // TODO: Implement file upload
+                        field.onChange(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                  {field.value && (
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => field.onChange("")}
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </FormControl>
+              <FormDescription>
+                Upload a PDF version of your publication (optional)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
