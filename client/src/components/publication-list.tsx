@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Trash2, Download, ExternalLink, Loader2 } from "lucide-react";
+import { Edit, Trash2, Download, ExternalLink, Eye, Loader2 } from "lucide-react";
 import PublicationForm from "./publication-form";
 
 interface PublicationListProps {
@@ -42,6 +42,7 @@ export default function PublicationList({
 }: PublicationListProps) {
   const [editPublication, setEditPublication] = useState<Publication | null>(null);
   const [deletePublication, setDeletePublication] = useState<Publication | null>(null);
+  const [viewingPdf, setViewingPdf] = useState<Publication | null>(null);
   const { toast } = useToast();
 
   const { data: publications = [], isLoading } = useQuery({
@@ -164,26 +165,44 @@ export default function PublicationList({
                       </Tooltip>
 
                       {publication.pdfUrl && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              asChild
-                            >
-                              <a
-                                href={publication.pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setViewingPdf(publication)}
                               >
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Download PDF</p>
-                          </TooltipContent>
-                        </Tooltip>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View PDF</p>
+                            </TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <a
+                                  href={publication.pdfUrl}
+                                  download={`${publication.title}.pdf`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download PDF</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
                       )}
                     </TooltipProvider>
                   </div>
@@ -194,6 +213,7 @@ export default function PublicationList({
         ))}
       </div>
 
+      {/* Edit Publication Dialog */}
       <Dialog open={!!editPublication} onOpenChange={() => setEditPublication(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] p-0">
           <DialogHeader className="px-6 pt-6">
@@ -209,6 +229,7 @@ export default function PublicationList({
         </DialogContent>
       </Dialog>
 
+      {/* Delete Publication Dialog */}
       <AlertDialog
         open={!!deletePublication}
         onOpenChange={() => setDeletePublication(null)}
@@ -235,6 +256,24 @@ export default function PublicationList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!viewingPdf} onOpenChange={() => setViewingPdf(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{viewingPdf?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingPdf?.pdfUrl && (
+            <div className="relative w-full h-[70vh]">
+              <iframe
+                src={viewingPdf.pdfUrl}
+                className="absolute inset-0 w-full h-full"
+                title={viewingPdf.title}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
