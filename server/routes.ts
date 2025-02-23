@@ -64,52 +64,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Password Reset Routes
   app.post("/api/auth/forgot-password", async (req, res) => {
-    const { email } = req.body;
-    const user = await storage.getUserByEmail(email);
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "No account found with this email" });
+      }
+
+      const otp = generateOTP();
+      storeOTP(email, otp);
+
+      // For development, log the OTP (in production this would be sent via email)
+      console.log(`[DEV] OTP for ${email}: ${otp}`);
+
+      res.status(200).json({ message: "OTP sent successfully" });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process forgot password request" });
     }
-
-    const otp = generateOTP();
-    storeOTP(email, otp);
-
-    // In a real application, send the OTP via email
-    // For now, just console log it
-    console.log(`OTP for ${email}: ${otp}`);
-
-    res.status(200).json({ message: "OTP sent successfully" });
   });
 
-  app.post("/api/auth/verify-otp", (req, res) => {
-    const { email, otp } = req.body;
+  app.post("/api/auth/verify-otp", async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) {
+        return res.status(400).json({ message: "Email and OTP are required" });
+      }
 
-    if (!verifyOTP(email, otp)) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+      if (!verifyOTP(email, otp)) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+
+      res.status(200).json({ message: "OTP verified successfully" });
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      res.status(500).json({ message: "Failed to verify OTP" });
     }
-
-    res.status(200).json({ message: "OTP verified successfully" });
   });
 
   app.post("/api/auth/reset-password", async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+    try {
+      const { email, otp, newPassword } = req.body;
+      if (!email || !otp || !newPassword) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
 
-    if (!verifyOTP(email, otp)) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+      if (!verifyOTP(email, otp)) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateUser(user.id, { password: hashedPassword });
+
+      // Clear the OTP after successful password reset
+      otpStore.delete(email);
+
+      res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
-
-    const user = await storage.getUserByEmail(email);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const hashedPassword = await hashPassword(newPassword);
-    await storage.updateUser(user.id, { password: hashedPassword });
-
-    // Clear the OTP after successful password reset
-    otpStore.delete(email);
-
-    res.status(200).json({ message: "Password reset successfully" });
   });
 
   // Add photo upload route
