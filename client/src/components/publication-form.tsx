@@ -72,15 +72,26 @@ export default function PublicationForm({
 
   const mutation = useMutation({
     mutationFn: async (data: InsertPublication) => {
+      // Ensure userId is included in the data
+      const publicationData = {
+        ...data,
+        userId: user?.id,
+      };
+
       const res = await apiRequest(
         publicationId ? "PUT" : "POST",
         publicationId ? `/api/publications/${publicationId}` : "/api/publications",
-        data
+        publicationData
       );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to save publication");
+      }
+
       return res.json();
     },
     onSuccess: () => {
-      // Invalidate both search and user publication queries
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/publications/search"] });
       queryClient.invalidateQueries({ queryKey: ["/api/publications/user", user?.id] });
@@ -91,7 +102,7 @@ export default function PublicationForm({
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: "Error saving publication",
         description: error.message,
         variant: "destructive",
       });
@@ -111,7 +122,7 @@ export default function PublicationForm({
             <FormItem>
               <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Input {...field} className="font-medium" />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -211,7 +222,11 @@ export default function PublicationForm({
             <FormItem>
               <FormLabel>DOI</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="e.g., 10.1000/xyz123" />
+                <Input 
+                  {...field} 
+                  value={field.value || ""}
+                  placeholder="e.g., 10.1000/xyz123" 
+                />
               </FormControl>
               <FormDescription>
                 Digital Object Identifier (optional)
@@ -259,7 +274,11 @@ export default function PublicationForm({
             <FormItem>
               <FormLabel>Research Area</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="e.g., Computer Science, Machine Learning" />
+                <Input 
+                  {...field} 
+                  value={field.value || ""}
+                  placeholder="e.g., Computer Science, Machine Learning" 
+                />
               </FormControl>
               <FormDescription>
                 Main research area for this publication
