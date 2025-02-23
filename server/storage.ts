@@ -1,6 +1,6 @@
 import { User, InsertUser, Publication, InsertPublication, users, publications } from "@shared/schema";
 import { db } from "./db";
-import { eq, ilike, or } from "drizzle-orm";
+import { eq, ilike, or, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -72,7 +72,8 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(publications)
-      .where(eq(publications.userId, userId));
+      .where(eq(publications.userId, userId))
+      .orderBy(desc(publications.createdAt));
   }
 
   async getAllPublications(): Promise<Publication[]> {
@@ -93,6 +94,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchPublications(query: string): Promise<Publication[]> {
+    if (!query) {
+      return await db.select().from(publications);
+    }
+
     const lowercaseQuery = query.toLowerCase();
     const results = await db
       .select()

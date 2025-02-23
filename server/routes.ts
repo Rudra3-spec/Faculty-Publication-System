@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/publications/search", async (req, res) => {
-    const query = req.query.q as string;
+    const query = req.query.query as string;
     const type = req.query.type as string;
     const year = req.query.year as string;
 
@@ -65,6 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/publications/user/:userId", async (req, res) => {
     const userId = parseInt(req.params.userId);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
     const publications = await storage.getPublicationsByUser(userId);
     res.json(publications);
   });

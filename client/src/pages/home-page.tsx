@@ -25,6 +25,16 @@ export default function HomePage() {
 
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
     queryKey: ["/api/publications/search", searchParams],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchParams.query) params.append("query", searchParams.query);
+      if (searchParams.type) params.append("type", searchParams.type);
+      if (searchParams.year) params.append("year", searchParams.year);
+
+      const response = await fetch(`/api/publications/search?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch publications');
+      return response.json();
+    },
   });
 
   return (

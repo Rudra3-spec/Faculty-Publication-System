@@ -62,8 +62,10 @@ export default function ProfilePage() {
     },
   });
 
+  // Update the publications query
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
     queryKey: ["/api/publications/user", user?.id],
+    enabled: !!user?.id, // Only run query when user ID is available
   });
 
   // Calculate statistics
