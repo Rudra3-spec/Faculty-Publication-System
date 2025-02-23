@@ -20,7 +20,7 @@ export interface IStorage {
   updatePublication(id: number, publication: Partial<InsertPublication>): Promise<Publication>;
   deletePublication(id: number): Promise<void>;
   searchPublications(query: string): Promise<Publication[]>;
-
+  updateUser(id: number, user: Partial<UpdateUser>): Promise<User>;
   sessionStore: session.Store;
 }
 
@@ -106,6 +106,21 @@ export class DatabaseStorage implements IStorage {
       );
     return results;
   }
+
+  async updateUser(id: number, userData: Partial<UpdateUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
 }
 
 export const storage = new DatabaseStorage();
+
+interface UpdateUser {
+  username?: string;
+  email?: string;
+  //other updatable fields
+}
