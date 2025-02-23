@@ -12,13 +12,6 @@ import { pool } from "./db";
 const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
-  // Existing methods remain the same
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, user: Partial<UpdateUser>): Promise<User>;
-
   // Publications
   createPublication(publication: InsertPublication & { userId: number }): Promise<Publication>;
   getPublication(id: number): Promise<Publication | undefined>;
@@ -98,6 +91,11 @@ export interface IStorage {
   }): Promise<Reaction[]>;
 
   sessionStore: session.Store;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<UpdateUser>): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -110,7 +108,121 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  // Keep existing method implementations...
+  // Publications
+  async createPublication(publication: InsertPublication & { userId: number }): Promise<Publication> {
+    try {
+      const [newPublication] = await db
+        .insert(publications)
+        .values({
+          ...publication,
+          doi: publication.doi || null,
+          pdfUrl: publication.pdfUrl || null,
+          researchArea: publication.researchArea || null,
+          citations: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      if (!newPublication) {
+        throw new Error('Failed to create publication');
+      }
+
+      return newPublication;
+    } catch (error) {
+      console.error('Error creating publication:', error);
+      throw error;
+    }
+  }
+
+  async getPublication(id: number): Promise<Publication | undefined> {
+    try {
+      const [publication] = await db
+        .select()
+        .from(publications)
+        .where(eq(publications.id, id));
+      return publication;
+    } catch (error) {
+      console.error('Error fetching publication:', error);
+      throw error;
+    }
+  }
+
+  async getPublicationsByUser(userId: number): Promise<Publication[]> {
+    try {
+      return await db
+        .select()
+        .from(publications)
+        .where(eq(publications.userId, userId))
+        .orderBy(desc(publications.createdAt));
+    } catch (error) {
+      console.error('Error fetching user publications:', error);
+      throw error;
+    }
+  }
+
+  async getAllPublications(): Promise<Publication[]> {
+    try {
+      return await db
+        .select()
+        .from(publications)
+        .orderBy(desc(publications.createdAt));
+    } catch (error) {
+      console.error('Error fetching all publications:', error);
+      throw error;
+    }
+  }
+
+  async updatePublication(id: number, publication: Partial<InsertPublication>): Promise<Publication> {
+    try {
+      const [updated] = await db
+        .update(publications)
+        .set({
+          ...publication,
+          updatedAt: new Date()
+        })
+        .where(eq(publications.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error updating publication:', error);
+      throw error;
+    }
+  }
+
+  async deletePublication(id: number): Promise<void> {
+    try {
+      await db.delete(publications).where(eq(publications.id, id));
+    } catch (error) {
+      console.error('Error deleting publication:', error);
+      throw error;
+    }
+  }
+
+  async searchPublications(query: string): Promise<Publication[]> {
+    try {
+      if (!query) {
+        return await this.getAllPublications();
+      }
+
+      const lowercaseQuery = query.toLowerCase();
+      return await db
+        .select()
+        .from(publications)
+        .where(
+          or(
+            ilike(publications.title, `%${lowercaseQuery}%`),
+            ilike(publications.authors, `%${lowercaseQuery}%`),
+            ilike(publications.keywords, `%${lowercaseQuery}%`),
+            ilike(publications.researchArea || '', `%${lowercaseQuery}%`)
+          )
+        )
+        .orderBy(desc(publications.createdAt));
+    } catch (error) {
+      console.error('Error searching publications:', error);
+      throw error;
+    }
+  }
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -129,80 +241,6 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
-  }
-
-  async createPublication(publication: InsertPublication & { userId: number }): Promise<Publication> {
-    const [newPublication] = await db
-      .insert(publications)
-      .values({
-        ...publication,
-        doi: publication.doi || null,
-        pdfUrl: publication.pdfUrl || null,
-        researchArea: publication.researchArea || null,
-        citations: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      .returning();
-
-    if (!newPublication) {
-      throw new Error('Failed to create publication');
-    }
-
-    return newPublication;
-  }
-
-  async getPublication(id: number): Promise<Publication | undefined> {
-    const result = await db
-      .select()
-      .from(publications)
-      .where(eq(publications.id, id));
-
-    return result[0];
-  }
-
-  async getPublicationsByUser(userId: number): Promise<Publication[]> {
-    return await db
-      .select()
-      .from(publications)
-      .where(eq(publications.userId, userId))
-      .orderBy(desc(publications.createdAt));
-  }
-
-  async getAllPublications(): Promise<Publication[]> {
-    return await db.select().from(publications);
-  }
-
-  async updatePublication(id: number, publication: Partial<InsertPublication>): Promise<Publication> {
-    const [updated] = await db
-      .update(publications)
-      .set(publication)
-      .where(eq(publications.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deletePublication(id: number): Promise<void> {
-    await db.delete(publications).where(eq(publications.id, id));
-  }
-
-  async searchPublications(query: string): Promise<Publication[]> {
-    if (!query) {
-      return await db.select().from(publications);
-    }
-
-    const lowercaseQuery = query.toLowerCase();
-    const results = await db
-      .select()
-      .from(publications)
-      .where(
-        or(
-          ilike(publications.title, `%${lowercaseQuery}%`),
-          ilike(publications.authors, `%${lowercaseQuery}%`),
-          ilike(publications.keywords, `%${lowercaseQuery}%`)
-        )
-      );
-    return results;
   }
 
   async updateUser(id: number, userData: Partial<UpdateUser>): Promise<User> {
