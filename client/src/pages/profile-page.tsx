@@ -1,8 +1,23 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, FileText, Download, Edit, Book, BookOpen, Filter, Camera, Link2 } from "lucide-react";
+import { 
+  Plus, 
+  ArrowLeft, 
+  FileText, 
+  Download, 
+  Edit, 
+  Book, 
+  Camera, 
+  Link2,
+  Users,
+  BookOpen,
+  TrendingUp,
+  Filter 
+} from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -35,7 +50,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import PublicationForm from "@/components/publication-form";
 import PublicationList from "@/components/publication-list";
 import { Publication } from "@shared/schema";
-import { Link } from "wouter";
 import ImpactVisualization from "@/components/impact-visualization";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SiGooglescholar, SiLinkedin, SiResearchgate, SiX, SiFacebook, SiInstagram } from "react-icons/si";
@@ -52,6 +66,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -143,7 +170,41 @@ export default function ProfilePage() {
 
   const totalPublications = publications.length;
   const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations || 0), 0);
-  const researchAreas = [...new Set(publications.map(pub => pub.researchArea || 'Uncategorized'))];
+  const researchAreas = Array.from(new Set(publications.map(pub => pub.researchArea || 'Uncategorized')));
+
+  // Calculate publications by year
+  const publicationsByYear = publications.reduce((acc, pub) => {
+    const year = new Date(pub.createdAt).getFullYear();
+    acc[year] = (acc[year] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>);
+
+  const yearlyData = Object.entries(publicationsByYear)
+    .map(([year, count]) => ({
+      year: parseInt(year),
+      publications: count,
+    }))
+    .sort((a, b) => a.year - b.year);
+
+  // Calculate publications by type
+  const publicationsByType = publications.reduce((acc, pub) => {
+    acc[pub.type] = (acc[pub.type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const typeData = Object.entries(publicationsByType).map(([type, value]) => ({
+    name: type,
+    value,
+  }));
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
+  // Calculate recent activity
+  const getRecentPublications = () => {
+    const now = new Date();
+    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    return publications.filter(p => new Date(p.createdAt) >= monthAgo).length;
+  };
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: UpdateUser) => {
@@ -188,7 +249,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                      {user?.profilePicture && <AvatarImage src={user.profilePicture} alt={user.name} />}
                       <AvatarFallback>
                         {user?.name?.split(" ").map(n => n[0]).join("")}
                       </AvatarFallback>
@@ -903,7 +964,111 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/*Dashboard */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Publications</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalPublications}</div>
+              <p className="text-xs text-muted-foreground">
+                Across {Object.keys(publicationsByType).length} different types
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Citations</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalCitations}</div>
+              <p className="text-xs text-muted-foreground">
+                Impact across all publications
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Research Areas</CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{researchAreas.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Diverse fields of study
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{getRecentPublications()}</div>
+              <p className="text-xs text-muted-foreground">
+                Publications in the last month
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Publications Over Time</CardTitle>
+              <CardDescription>Yearly publication count</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={yearlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="publications" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Publication Types</CardTitle>
+              <CardDescription>Distribution by category</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={typeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {typeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6">
           <Card className="md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
