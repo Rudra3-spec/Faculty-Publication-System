@@ -80,7 +80,7 @@ export interface IStorage {
   deleteComment(id: number): Promise<void>;
 
   // Reactions
-  addReaction(type: string, userId: number, target: { 
+  addReaction(type: string, userId: number, target: {
     publicationId?: number;
     projectId?: number;
     commentId?: number;
@@ -104,9 +104,9 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
     });
   }
 
@@ -136,18 +136,29 @@ export class DatabaseStorage implements IStorage {
       .insert(publications)
       .values({
         ...publication,
+        doi: publication.doi || null,
+        pdfUrl: publication.pdfUrl || null,
+        researchArea: publication.researchArea || null,
+        citations: null,
         createdAt: new Date(),
+        updatedAt: new Date()
       })
       .returning();
+
+    if (!newPublication) {
+      throw new Error('Failed to create publication');
+    }
+
     return newPublication;
   }
 
   async getPublication(id: number): Promise<Publication | undefined> {
-    const [publication] = await db
+    const result = await db
       .select()
       .from(publications)
       .where(eq(publications.id, id));
-    return publication;
+
+    return result[0];
   }
 
   async getPublicationsByUser(userId: number): Promise<Publication[]> {
