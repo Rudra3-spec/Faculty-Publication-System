@@ -114,7 +114,7 @@ export function SocialConnections({ userId }: SocialConnectionsProps) {
           {users?.map((user) => (
             <div key={user.id} className="flex items-center gap-4">
               <Avatar>
-                <AvatarImage src={user.profilePicture} />
+                <AvatarImage src={user.profilePicture || undefined} />
                 <AvatarFallback>{user.name?.[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -131,56 +131,49 @@ export function SocialConnections({ userId }: SocialConnectionsProps) {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connections</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4">
-            <UserList users={followers || []} title="Followers" />
-            <UserList users={following || []} title="Following" />
-          </div>
-          
-          {!isOwnProfile && (
-            <div className="flex gap-4">
-              <Button
-                variant={isFollowing?.isFollowing ? "outline" : "default"}
-                className="w-full gap-2"
-                onClick={() => {
-                  if (isFollowing?.isFollowing) {
-                    unfollowMutation.mutate();
-                  } else {
-                    followMutation.mutate();
-                  }
-                }}
-                disabled={followMutation.isPending || unfollowMutation.isPending}
-              >
-                {isFollowing?.isFollowing ? (
-                  <>
-                    <UserMinus className="h-4 w-4" />
-                    Unfollow
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="h-4 w-4" />
-                    Follow
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => sendFriendRequestMutation.mutate()}
-                disabled={sendFriendRequestMutation.isPending}
-              >
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4">
+        <UserList users={followers || []} title="Followers" />
+        <UserList users={following || []} title="Following" />
+      </div>
+
+      {!isOwnProfile && (
+        <div className="flex gap-4">
+          <Button
+            variant={isFollowing?.isFollowing ? "outline" : "default"}
+            className="w-full gap-2"
+            onClick={() => {
+              if (isFollowing?.isFollowing) {
+                unfollowMutation.mutate();
+              } else {
+                followMutation.mutate();
+              }
+            }}
+            disabled={followMutation.isPending || unfollowMutation.isPending}
+          >
+            {isFollowing?.isFollowing ? (
+              <>
+                <UserMinus className="h-4 w-4" />
+                Unfollow
+              </>
+            ) : (
+              <>
                 <UserPlus className="h-4 w-4" />
-                Add Friend
-              </Button>
-            </div>
-          )}
+                Follow
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => sendFriendRequestMutation.mutate()}
+            disabled={sendFriendRequestMutation.isPending}
+          >
+            <UserPlus className="h-4 w-4" />
+            Add Friend
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

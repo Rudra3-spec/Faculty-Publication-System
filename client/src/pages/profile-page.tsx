@@ -128,7 +128,7 @@ export default function ProfilePage() {
       currentState: user?.currentState || "",
       almaCity: user?.almaCity || "",
       almaState: user?.almaState || "",
-      isPublic: user?.isPublic || false, // Add isPublic field to defaultValues
+      isPublic: user?.isPublic || false,
 
     },
   });
@@ -255,23 +255,17 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FormField
-                    control={form.control}
-                    name="isPublic"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center gap-2">
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          {field.value ? "Public Profile" : "Private Profile"}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={user?.isPublic || false}
+                      onCheckedChange={(checked) => {
+                        updateProfileMutation.mutate({ isPublic: checked });
+                      }}
+                    />
+                    <span className="text-sm font-normal">
+                      {user?.isPublic ? "Public Profile" : "Private Profile"}
+                    </span>
+                  </div>
                   <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -968,7 +962,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalPublications}</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-mutedforeground">
                 Across all publication types
               </p>
             </CardContent>
