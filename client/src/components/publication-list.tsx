@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Edit, Trash2, Download, ExternalLink, Eye, Loader2, FileText } from "lucide-react";
 import PublicationForm from "./publication-form";
+import PDFViewer from "./pdf-viewer";
 
 interface PublicationListProps {
   userId?: number;
@@ -178,7 +179,6 @@ export default function PublicationList({
         ))}
       </div>
 
-      {/* Publication Detail Dialog */}
       <Dialog open={!!viewingPublication} onOpenChange={() => setViewingPublication(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -283,7 +283,6 @@ export default function PublicationList({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Publication Dialog */}
       <Dialog open={!!editPublication} onOpenChange={() => setEditPublication(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] p-0">
           <DialogHeader className="px-6 pt-6">
@@ -299,7 +298,6 @@ export default function PublicationList({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Publication Dialog */}
       <AlertDialog
         open={!!deletePublication}
         onOpenChange={() => setDeletePublication(null)}
@@ -327,23 +325,13 @@ export default function PublicationList({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* PDF Viewer Dialog */}
-      <Dialog open={!!viewingPdf} onOpenChange={() => setViewingPdf(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>{viewingPdf?.title}</DialogTitle>
-          </DialogHeader>
-          {viewingPdf?.pdfUrl && (
-            <div className="relative w-full h-[70vh]">
-              <iframe
-                src={viewingPdf.pdfUrl}
-                className="absolute inset-0 w-full h-full"
-                title={viewingPdf.title}
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {viewingPdf?.pdfUrl && (
+        <PDFViewer
+          url={viewingPdf.pdfUrl}
+          open={!!viewingPdf}
+          onOpenChange={() => setViewingPdf(null)}
+        />
+      )}
     </>
   );
 }
