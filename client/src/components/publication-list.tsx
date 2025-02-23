@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Trash2, Download, ExternalLink, Eye, Loader2 } from "lucide-react";
+import { Edit, Trash2, Download, ExternalLink, Eye, Loader2, FileText } from "lucide-react";
 import PublicationForm from "./publication-form";
 
 interface PublicationListProps {
@@ -42,6 +42,7 @@ export default function PublicationList({
 }: PublicationListProps) {
   const [editPublication, setEditPublication] = useState<Publication | null>(null);
   const [deletePublication, setDeletePublication] = useState<Publication | null>(null);
+  const [viewingPublication, setViewingPublication] = useState<Publication | null>(null);
   const [viewingPdf, setViewingPdf] = useState<Publication | null>(null);
   const { toast } = useToast();
 
@@ -108,7 +109,11 @@ export default function PublicationList({
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {publications.map((publication) => (
-          <Card key={publication.id}>
+          <Card 
+            key={publication.id} 
+            className="cursor-pointer transition-colors hover:bg-muted/50"
+            onClick={() => setViewingPublication(publication)}
+          >
             <CardHeader>
               <CardTitle className="line-clamp-2">{publication.title}</CardTitle>
             </CardHeader>
@@ -126,13 +131,14 @@ export default function PublicationList({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary flex items-center gap-1 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <ExternalLink className="h-3 w-3" />
                     DOI: {publication.doi}
                   </a>
                 )}
                 {showActions && (
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -163,47 +169,6 @@ export default function PublicationList({
                           <p>Delete this publication</p>
                         </TooltipContent>
                       </Tooltip>
-
-                      {publication.pdfUrl && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setViewingPdf(publication)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>View PDF</p>
-                            </TooltipContent>
-                          </Tooltip>
-
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                asChild
-                              >
-                                <a
-                                  href={publication.pdfUrl}
-                                  download={`${publication.title}.pdf`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </a>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Download PDF</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
                     </TooltipProvider>
                   </div>
                 )}
@@ -212,6 +177,78 @@ export default function PublicationList({
           </Card>
         ))}
       </div>
+
+      {/* Publication Detail Dialog */}
+      <Dialog open={!!viewingPublication} onOpenChange={() => setViewingPublication(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewingPublication?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium mb-1">Authors</h3>
+              <p>{viewingPublication?.authors}</p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-1">Published in</h3>
+              <p>{viewingPublication?.venue}, {viewingPublication?.year}</p>
+            </div>
+            {viewingPublication?.doi && (
+              <div>
+                <h3 className="font-medium mb-1">DOI</h3>
+                <a
+                  href={`https://doi.org/${viewingPublication.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary flex items-center gap-1 hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {viewingPublication.doi}
+                </a>
+              </div>
+            )}
+            <div>
+              <h3 className="font-medium mb-1">Abstract</h3>
+              <p className="text-muted-foreground">{viewingPublication?.abstract}</p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-1">Keywords</h3>
+              <p className="text-muted-foreground">{viewingPublication?.keywords}</p>
+            </div>
+            {viewingPublication?.researchArea && (
+              <div>
+                <h3 className="font-medium mb-1">Research Area</h3>
+                <p className="text-muted-foreground">{viewingPublication.researchArea}</p>
+              </div>
+            )}
+            {viewingPublication?.pdfUrl && (
+              <div className="flex gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setViewingPublication(null);
+                    setViewingPdf(viewingPublication);
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View PDF
+                </Button>
+                <Button variant="outline" asChild>
+                  <a
+                    href={viewingPublication.pdfUrl}
+                    download={`${viewingPublication.title}.pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </a>
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Publication Dialog */}
       <Dialog open={!!editPublication} onOpenChange={() => setEditPublication(null)}>
