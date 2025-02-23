@@ -172,18 +172,6 @@ export default function ProfilePage() {
   const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations || 0), 0);
   const researchAreas = Array.from(new Set(publications.map(pub => pub.researchArea || 'Uncategorized')));
 
-  const publicationsByType = publications.reduce((acc, pub) => {
-    acc[pub.type] = (acc[pub.type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const typeData = Object.entries(publicationsByType).map(([type, value]) => ({
-    name: type,
-    value,
-  }));
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
   const getRecentPublications = () => {
     const now = new Date();
     const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -263,20 +251,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Add Publication
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Publication</DialogTitle>
-                      </DialogHeader>
-                      <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
                   <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -986,8 +960,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalCitations}</div>
-              <p className="text-xs text-muted-foreground">
-                Impact across all works
+              <p className="text-xs text-muted-foreground">Impact across all works
               </p>
             </CardContent>
           </Card>
@@ -1019,40 +992,31 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* Publications by Type */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Publications by Type</CardTitle>
-            <CardDescription>Distribution across different publication types</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={typeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {typeData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Publications List */}
         <Card>
           <CardHeader>
-            <CardTitle>Publications</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Publications</CardTitle>
+                <CardDescription>
+                  Manage and showcase your research publications
+                </CardDescription>
+              </div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Publication
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add New Publication</DialogTitle>
+                  </DialogHeader>
+                  <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             <PublicationList
