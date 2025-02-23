@@ -111,6 +111,8 @@ export class DatabaseStorage implements IStorage {
   // Publications
   async createPublication(publication: InsertPublication & { userId: number }): Promise<Publication> {
     try {
+      console.log('Creating publication:', publication);
+
       const [newPublication] = await db
         .insert(publications)
         .values({
@@ -123,6 +125,8 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .returning();
+
+      console.log('Created publication:', newPublication);
 
       if (!newPublication) {
         throw new Error('Failed to create publication');
@@ -150,11 +154,15 @@ export class DatabaseStorage implements IStorage {
 
   async getPublicationsByUser(userId: number): Promise<Publication[]> {
     try {
-      return await db
+      console.log('Fetching publications for user:', userId);
+      const results = await db
         .select()
         .from(publications)
         .where(eq(publications.userId, userId))
         .orderBy(desc(publications.createdAt));
+
+      console.log('Found publications:', results);
+      return results;
     } catch (error) {
       console.error('Error fetching user publications:', error);
       throw error;

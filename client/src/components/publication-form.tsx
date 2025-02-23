@@ -55,6 +55,7 @@ export default function PublicationForm({
 }: PublicationFormProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+
   const form = useForm<InsertPublication>({
     resolver: zodResolver(insertPublicationSchema),
     defaultValues: publication || {
@@ -82,6 +83,8 @@ export default function PublicationForm({
         userId: user.id,
       };
 
+      console.log('Submitting publication:', publicationData);
+
       const res = await apiRequest(
         publicationId ? "PUT" : "POST",
         publicationId ? `/api/publications/${publicationId}` : "/api/publications",
@@ -95,17 +98,20 @@ export default function PublicationForm({
 
       return res.json();
     },
-    onSuccess: () => {
-      // Invalidate all relevant queries
+    onSuccess: (data) => {
+      console.log('Publication saved successfully:', data);
+
+      // Invalidate all relevant queries with proper array-based keys
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/publications/search"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/publications/user", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/publications", "search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/publications", "user", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user", user?.id, "publications"] });
 
       toast({
         title: `Publication ${publicationId ? "updated" : "added"} successfully`,
       });
 
-      form.reset(); // Reset form after successful submission
+      form.reset();
       onSuccess?.();
     },
     onError: (error: Error) => {
@@ -122,7 +128,10 @@ export default function PublicationForm({
     <ScrollArea className="h-[80vh] px-6">
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+          onSubmit={form.handleSubmit((data) => {
+            console.log('Form submitted with data:', data);
+            mutation.mutate(data);
+          })}
           className="space-y-6 pb-10"
         >
           <FormField
