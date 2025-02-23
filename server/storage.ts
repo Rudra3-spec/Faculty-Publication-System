@@ -10,6 +10,7 @@ const PostgresSessionStore = connectPg(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // Publications
@@ -41,6 +42,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
@@ -127,5 +133,31 @@ export const storage = new DatabaseStorage();
 interface UpdateUser {
   username?: string;
   email?: string;
-  //other updatable fields
+  password?: string;
+  name?: string;
+  department?: string;
+  designation?: string;
+  bio?: string;
+  researchInterests?: string;
+  contactEmail?: string;
+  profilePicture?: string;
+  linkedinUrl?: string;
+  googleScholarUrl?: string;
+  researchGateUrl?: string;
+  twitterUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  personalWebsite?: string;
+  education?: string;
+  awards?: string;
+  officeHours?: string;
+  officeLocation?: string;
+  college?: string;
+  school?: string;
+  currentCity?: string;
+  currentState?: string;
+  almaCollege?: string;
+  almaSchool?: string;
+  almaCity?: string;
+  almaState?: string;
 }

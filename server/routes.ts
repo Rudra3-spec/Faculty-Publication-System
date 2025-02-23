@@ -36,8 +36,81 @@ if (!fs.existsSync("./uploads/profiles")) {
   fs.mkdirSync("./uploads/profiles", { recursive: true });
 }
 
+// Store OTPs with expiration (5 minutes)
+const otpStore = new Map<string, { otp: string; expires: Date }>();
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function storeOTP(email: string, otp: string) {
+  const expires = new Date();
+  expires.setMinutes(expires.getMinutes() + 5); // 5 minutes expiration
+  otpStore.set(email, { otp, expires });
+}
+
+function verifyOTP(email: string, otp: string): boolean {
+  const storedData = otpStore.get(email);
+  if (!storedData) return false;
+  if (new Date() > storedData.expires) {
+    otpStore.delete(email);
+    return false;
+  }
+  return storedData.otp === otp;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+
+  // Password Reset Routes
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    const user = await storage.getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = generateOTP();
+    storeOTP(email, otp);
+
+    // In a real application, send the OTP via email
+    // For now, just console log it
+    console.log(`OTP for ${email}: ${otp}`);
+
+    res.status(200).json({ message: "OTP sent successfully" });
+  });
+
+  app.post("/api/auth/verify-otp", (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!verifyOTP(email, otp)) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    if (!verifyOTP(email, otp)) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const user = await storage.getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    await storage.updateUser(user.id, { password: hashedPassword });
+
+    // Clear the OTP after successful password reset
+    otpStore.delete(email);
+
+    res.status(200).json({ message: "Password reset successfully" });
+  });
 
   // Add photo upload route
   app.post("/api/user/photo", upload.single("photo"), async (req, res) => {

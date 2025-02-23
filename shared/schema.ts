@@ -2,6 +2,38 @@ import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+const userBaseSchema = {
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  department: z.string().min(1, "Department is required"),
+  designation: z.string().min(1, "Designation is required"),
+  bio: z.string().optional(),
+  researchInterests: z.string().optional(),
+  contactEmail: z.string().email().optional(),
+  profilePicture: z.string().optional(),
+  linkedinUrl: z.string().optional(),
+  googleScholarUrl: z.string().optional(),
+  researchGateUrl: z.string().optional(),
+  twitterUrl: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  instagramUrl: z.string().optional(),
+  personalWebsite: z.string().optional(),
+  education: z.string().optional(),
+  awards: z.string().optional(),
+  officeHours: z.string().optional(),
+  officeLocation: z.string().optional(),
+  college: z.string().optional(),
+  school: z.string().optional(),
+  currentCity: z.string().optional(),
+  currentState: z.string().optional(),
+  almaCollege: z.string().optional(),
+  almaSchool: z.string().optional(),
+  almaCity: z.string().optional(),
+  almaState: z.string().optional(),
+};
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -56,37 +88,6 @@ export const publications = pgTable("publications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-const userBaseSchema = {
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  name: z.string().min(1, "Name is required"),
-  department: z.string().min(1, "Department is required"),
-  designation: z.string().min(1, "Designation is required"),
-  bio: z.string().optional(),
-  researchInterests: z.string().optional(),
-  contactEmail: z.string().email().optional(),
-  profilePicture: z.string().optional(),
-  linkedinUrl: z.string().optional(),
-  googleScholarUrl: z.string().optional(),
-  researchGateUrl: z.string().optional(),
-  twitterUrl: z.string().optional(),
-  facebookUrl: z.string().optional(),
-  instagramUrl: z.string().optional(),
-  personalWebsite: z.string().optional(),
-  education: z.string().optional(),
-  awards: z.string().optional(),
-  officeHours: z.string().optional(),
-  officeLocation: z.string().optional(),
-  college: z.string().optional(),
-  school: z.string().optional(),
-  currentCity: z.string().optional(),
-  currentState: z.string().optional(),
-  almaCollege: z.string().optional(),
-  almaSchool: z.string().optional(),
-  almaCity: z.string().optional(),
-  almaState: z.string().optional(),
-};
 
 export const insertUserSchema = z.object(userBaseSchema);
 

@@ -9,10 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   if (user) {
     setLocation("/");
@@ -53,7 +58,7 @@ export default function AuthPage() {
               </TabsList>
 
               <TabsContent value="login">
-                <LoginForm />
+                <LoginForm onForgotPassword={() => setForgotPasswordOpen(true)} />
               </TabsContent>
 
               <TabsContent value="register">
@@ -63,11 +68,12 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </div>
+      <ForgotPasswordDialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen} />
     </div>
   );
 }
 
-function LoginForm() {
+function LoginForm({ onForgotPassword }: { onForgotPassword: () => void }) {
   const { loginMutation } = useAuth();
   const form = useForm({
     defaultValues: {
@@ -109,6 +115,14 @@ function LoginForm() {
           {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Login
         </Button>
+        <Button 
+          type="button" 
+          variant="link" 
+          className="text-sm text-muted-foreground hover:text-primary"
+          onClick={onForgotPassword}
+        >
+          Forgot Password?
+        </Button>
       </form>
     </Form>
   );
@@ -122,6 +136,7 @@ function RegisterForm() {
       username: "",
       password: "",
       name: "",
+      email: "",
       department: "",
       designation: "",
     },
@@ -138,6 +153,19 @@ function RegisterForm() {
               <FormLabel>Username</FormLabel>
               <FormControl>
                 <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -201,5 +229,126 @@ function RegisterForm() {
         </Button>
       </form>
     </Form>
+  );
+}
+
+function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [step, setStep] = useState<'email' | 'otp' | 'newPassword'>('email');
+  const { toast } = useToast();
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      otp: "",
+      newPassword: "",
+    },
+  });
+
+  const handleSubmit = async (data: any) => {
+    try {
+      if (step === 'email') {
+        // Send OTP to email
+        await apiRequest('POST', '/api/auth/forgot-password', { email: data.email });
+        toast({
+          title: "OTP Sent",
+          description: "Please check your email for the OTP",
+        });
+        setStep('otp');
+      } else if (step === 'otp') {
+        // Verify OTP
+        await apiRequest('POST', '/api/auth/verify-otp', { 
+          email: form.getValues('email'),
+          otp: data.otp 
+        });
+        setStep('newPassword');
+      } else {
+        // Reset password
+        await apiRequest('POST', '/api/auth/reset-password', {
+          email: form.getValues('email'),
+          otp: form.getValues('otp'),
+          newPassword: data.newPassword
+        });
+        toast({
+          title: "Password Reset Successful",
+          description: "You can now login with your new password",
+        });
+        onOpenChange(false);
+        setStep('email');
+        form.reset();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {step === 'email' && "Forgot Password"}
+            {step === 'otp' && "Enter OTP"}
+            {step === 'newPassword' && "Reset Password"}
+          </DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {step === 'email' && (
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {step === 'otp' && (
+              <FormField
+                control={form.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>OTP</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter the OTP sent to your email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {step === 'newPassword' && (
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            <Button type="submit" className="w-full">
+              {step === 'email' && "Send OTP"}
+              {step === 'otp' && "Verify OTP"}
+              {step === 'newPassword' && "Reset Password"}
+            </Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
