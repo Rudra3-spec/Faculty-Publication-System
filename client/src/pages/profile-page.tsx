@@ -64,6 +64,12 @@ export default function ProfilePage() {
   const [summaryFormat, setSummaryFormat] = useState<SummaryFormat>("PDF");
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilter>("year");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [openCollegePopover, setOpenCollegePopover] = useState(false);
+  const [openAlmaCollegePopover, setOpenAlmaCollegePopover] = useState(false);
+  const [openCurrentCityPopover, setOpenCurrentCityPopover] = useState(false);
+  const [openCurrentStatePopover, setOpenCurrentStatePopover] = useState(false);
+  const [openAlmaCityPopover, setOpenAlmaCityPopover] = useState(false);
+  const [openAlmaStatePopover, setOpenAlmaStatePopover] = useState(false);
 
   const form = useForm<UpdateUser>({
     resolver: zodResolver(updateUserSchema),
@@ -407,7 +413,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>Current Institution</FormLabel>
-                                <Popover>
+                                <Popover open={openCollegePopover} onOpenChange={setOpenCollegePopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input
@@ -427,6 +433,7 @@ export default function ProfilePage() {
                                             key={college}
                                             onSelect={() => {
                                               form.setValue("college", college);
+                                              setOpenCollegePopover(false);
                                             }}
                                           >
                                             {college}
@@ -461,7 +468,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>City</FormLabel>
-                                <Popover>
+                                <Popover open={openCurrentCityPopover} onOpenChange={setOpenCurrentCityPopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input {...field} placeholder="Select city" />
@@ -477,6 +484,7 @@ export default function ProfilePage() {
                                             key={city}
                                             onSelect={() => {
                                               form.setValue("currentCity", city);
+                                              setOpenCurrentCityPopover(false);
                                             }}
                                           >
                                             {city}
@@ -496,7 +504,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>State</FormLabel>
-                                <Popover>
+                                <Popover open={openCurrentStatePopover} onOpenChange={setOpenCurrentStatePopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input {...field} placeholder="Select state" />
@@ -512,6 +520,7 @@ export default function ProfilePage() {
                                             key={state}
                                             onSelect={() => {
                                               form.setValue("currentState", state);
+                                              setOpenCurrentStatePopover(false);
                                             }}
                                           >
                                             {state}
@@ -534,7 +543,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>Alma Mater Institution</FormLabel>
-                                <Popover>
+                                <Popover open={openAlmaCollegePopover} onOpenChange={setOpenAlmaCollegePopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input
@@ -554,6 +563,7 @@ export default function ProfilePage() {
                                             key={college}
                                             onSelect={() => {
                                               form.setValue("almaCollege", college);
+                                              setOpenAlmaCollegePopover(false);
                                             }}
                                           >
                                             {college}
@@ -588,7 +598,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>City</FormLabel>
-                                <Popover>
+                                <Popover open={openAlmaCityPopover} onOpenChange={setOpenAlmaCityPopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input {...field} placeholder="Select city" />
@@ -604,6 +614,7 @@ export default function ProfilePage() {
                                             key={city}
                                             onSelect={() => {
                                               form.setValue("almaCity", city);
+                                              setOpenAlmaCityPopover(false);
                                             }}
                                           >
                                             {city}
@@ -623,7 +634,7 @@ export default function ProfilePage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>State</FormLabel>
-                                <Popover>
+                                <Popover open={openAlmaStatePopover} onOpenChange={setOpenAlmaStatePopover}>
                                   <PopoverTrigger asChild>
                                     <FormControl>
                                       <Input {...field} placeholder="Select state" />
@@ -639,6 +650,7 @@ export default function ProfilePage() {
                                             key={state}
                                             onSelect={() => {
                                               form.setValue("almaState", state);
+                                              setOpenAlmaStatePopover(false);
                                             }}
                                           >
                                             {state}
