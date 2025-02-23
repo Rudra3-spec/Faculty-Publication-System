@@ -83,7 +83,7 @@ export default function PublicationForm({
         userId: user.id,
       };
 
-      console.log('Submitting publication:', publicationData);
+      console.log('Starting publication submission:', publicationData);
 
       const res = await apiRequest(
         publicationId ? "PUT" : "POST",
@@ -101,11 +101,18 @@ export default function PublicationForm({
     onSuccess: (data) => {
       console.log('Publication saved successfully:', data);
 
-      // Invalidate all relevant queries with proper array-based keys
-      queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/publications", "search"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/publications", "user", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user", user?.id, "publications"] });
+      // Invalidate all publication-related queries
+      [
+        ["/api/publications"],
+        ["/api/publications", "search"],
+        ["/api/publications", "user", user?.id],
+        ["/api/user", user?.id, "publications"],
+        ["/api/dashboard"],
+        ["/api/profile", user?.id]
+      ].forEach(queryKey => {
+        console.log('Invalidating query:', queryKey);
+        queryClient.invalidateQueries({ queryKey });
+      });
 
       toast({
         title: `Publication ${publicationId ? "updated" : "added"} successfully`,
