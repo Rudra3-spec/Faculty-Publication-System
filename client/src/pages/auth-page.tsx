@@ -10,9 +10,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import * as z from "zod";
+
+// Form schemas for validation
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+const otpSchema = z.object({
+  otp: z.string().length(6, "OTP must be 6 digits"),
+});
+
+const newPasswordSchema = z.object({
+  newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+});
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -139,6 +158,7 @@ function RegisterForm() {
       email: "",
       department: "",
       designation: "",
+      isPublic: false,
     },
   });
 
@@ -260,46 +280,71 @@ function RegisterForm() {
 function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [step, setStep] = useState<'email' | 'otp' | 'newPassword'>('email');
   const { toast } = useToast();
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      otp: "",
-      newPassword: "",
-    },
+
+  const emailForm = useForm({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" }
   });
 
-  const handleSubmit = async (data: any) => {
+  const otpForm = useForm({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { otp: "" }
+  });
+
+  const passwordForm = useForm({
+    resolver: zodResolver(newPasswordSchema),
+    defaultValues: { newPassword: "" }
+  });
+
+  const handleEmailSubmit = async (data: z.infer<typeof forgotPasswordSchema>) => {
     try {
-      if (step === 'email') {
-        // Send OTP to email
-        await apiRequest('POST', '/api/auth/forgot-password', { email: data.email });
-        toast({
-          title: "OTP Sent",
-          description: "Please check your email for the OTP",
-        });
-        setStep('otp');
-      } else if (step === 'otp') {
-        // Verify OTP
-        await apiRequest('POST', '/api/auth/verify-otp', { 
-          email: form.getValues('email'),
-          otp: data.otp 
-        });
-        setStep('newPassword');
-      } else {
-        // Reset password
-        await apiRequest('POST', '/api/auth/reset-password', {
-          email: form.getValues('email'),
-          otp: form.getValues('otp'),
-          newPassword: data.newPassword
-        });
-        toast({
-          title: "Password Reset Successful",
-          description: "You can now login with your new password",
-        });
-        onOpenChange(false);
-        setStep('email');
-        form.reset();
-      }
+      await apiRequest('POST', '/api/auth/forgot-password', { email: data.email });
+      toast({
+        title: "OTP Sent",
+        description: "Please check your email for the OTP",
+      });
+      setStep('otp');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOtpSubmit = async (data: z.infer<typeof otpSchema>) => {
+    try {
+      await apiRequest('POST', '/api/auth/verify-otp', { 
+        email: emailForm.getValues('email'),
+        otp: data.otp 
+      });
+      setStep('newPassword');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePasswordSubmit = async (data: z.infer<typeof newPasswordSchema>) => {
+    try {
+      await apiRequest('POST', '/api/auth/reset-password', {
+        email: emailForm.getValues('email'),
+        otp: otpForm.getValues('otp'),
+        newPassword: data.newPassword
+      });
+      toast({
+        title: "Password Reset Successful",
+        description: "You can now login with your new password",
+      });
+      onOpenChange(false);
+      setStep('email');
+      emailForm.reset();
+      otpForm.reset();
+      passwordForm.reset();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -319,11 +364,12 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             {step === 'newPassword' && "Reset Password"}
           </DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {step === 'email' && (
+
+        {step === 'email' && (
+          <Form {...emailForm}>
+            <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={emailForm.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -335,25 +381,54 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                   </FormItem>
                 )}
               />
-            )}
-            {step === 'otp' && (
+              <Button type="submit" className="w-full">
+                Send OTP
+              </Button>
+            </form>
+          </Form>
+        )}
+
+        {step === 'otp' && (
+          <Form {...otpForm}>
+            <form onSubmit={otpForm.handleSubmit(handleOtpSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={otpForm.control}
                 name="otp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>OTP</FormLabel>
+                    <FormLabel>Enter 6-digit OTP</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter the OTP sent to your email" />
+                      <InputOTP
+                        maxLength={6}
+                        render={({ slots }) => (
+                          <InputOTPGroup>
+                            {slots.map((slot, index) => (
+                              <InputOTPSlot key={index} {...slot} />
+                            ))}
+                          </InputOTPGroup>
+                        )}
+                        {...field}
+                      />
                     </FormControl>
+                    <FormDescription>
+                      Check your email for the OTP code
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-            {step === 'newPassword' && (
+              <Button type="submit" className="w-full">
+                Verify OTP
+              </Button>
+            </form>
+          </Form>
+        )}
+
+        {step === 'newPassword' && (
+          <Form {...passwordForm}>
+            <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={passwordForm.control}
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
@@ -361,18 +436,25 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
+                    <FormDescription className="text-xs space-y-1">
+                      Password must contain:
+                      <ul className="list-disc list-inside">
+                        <li>At least 8 characters</li>
+                        <li>One uppercase letter</li>
+                        <li>One lowercase letter</li>
+                        <li>One number</li>
+                      </ul>
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-            <Button type="submit" className="w-full">
-              {step === 'email' && "Send OTP"}
-              {step === 'otp' && "Verify OTP"}
-              {step === 'newPassword' && "Reset Password"}
-            </Button>
-          </form>
-        </Form>
+              <Button type="submit" className="w-full">
+                Reset Password
+              </Button>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
