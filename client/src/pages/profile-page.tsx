@@ -770,14 +770,14 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium">Format</h3>
                     <Select
                       value={summaryFormat}
                       onValueChange={(value) => setSummaryFormat(value as SummaryFormat)}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Format" />
                       </SelectTrigger>
                       <SelectContent>
@@ -793,7 +793,7 @@ export default function ProfilePage() {
                       value={summaryFilter}
                       onValueChange={(value) => setSummaryFilter(value as SummaryFilter)}
                     >
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Group By" />
                       </SelectTrigger>
                       <SelectContent>
@@ -807,6 +807,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleGenerateSummary}
                   disabled={isLoading}
+                  className="w-full"
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Generate Summary
@@ -928,7 +929,7 @@ export default function ProfilePage() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <PublicationList 
+              <PublicationList
                 publications={publications}
                 isLoading={isLoading}
                 showActions
@@ -953,8 +954,7 @@ export default function ProfilePage() {
                     >
                       <span>{area}</span>
                       <span className="text-muted-foreground">
-                        {publications.filter((p) => p.researchArea === area).length}
-                      </span>
+                        {publications.filter((p) => p.researchArea === area).length}                      </span>
                     </div>
                   ))}
                 </div>
