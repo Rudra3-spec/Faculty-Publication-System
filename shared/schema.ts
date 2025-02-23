@@ -99,6 +99,66 @@ export const friendRequests = pgTable("friend_requests", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// New tables for collaboration features
+export const researchGroups = pgTable("research_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  creatorId: integer("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  isPublic: boolean("is_public").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const groupMemberships = pgTable("group_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  groupId: integer("group_id").notNull().references(() => researchGroups.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("member"), // member, admin, moderator
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+});
+
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("active"), // active, completed, on-hold
+  creatorId: integer("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  groupId: integer("group_id").references(() => researchGroups.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const projectCollaborators = pgTable("project_collaborators", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("collaborator"), // collaborator, lead
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+});
+
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  publicationId: integer("publication_id").references(() => publications.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  groupId: integer("group_id").references(() => researchGroups.id, { onDelete: "cascade" }),
+  parentId: integer("parent_id").references(() => comments.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const reactions = pgTable("reactions", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // like, applaud, insightful
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  publicationId: integer("publication_id").references(() => publications.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  commentId: integer("comment_id").references(() => comments.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Keep existing publications table
 export const publications = pgTable("publications", {
   id: serial("id").primaryKey(),
@@ -146,6 +206,28 @@ export const insertPublicationSchema = createInsertSchema(publications).pick({
   researchArea: true,
 });
 
+// Schema definitions for new tables
+export const insertResearchGroupSchema = createInsertSchema(researchGroups).pick({
+  name: true,
+  description: true,
+  isPublic: true,
+});
+
+export const insertProjectSchema = createInsertSchema(projects).pick({
+  title: true,
+  description: true,
+  status: true,
+  groupId: true,
+});
+
+export const insertCommentSchema = createInsertSchema(comments).pick({
+  content: true,
+  publicationId: true,
+  projectId: true,
+  groupId: true,
+  parentId: true,
+});
+
 // Type definitions
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
@@ -154,3 +236,12 @@ export type InsertPublication = z.infer<typeof insertPublicationSchema>;
 export type Publication = typeof publications.$inferSelect;
 export type Follower = typeof followers.$inferSelect;
 export type FriendRequest = typeof friendRequests.$inferSelect;
+
+// Type definitions for new tables
+export type ResearchGroup = typeof researchGroups.$inferSelect;
+export type InsertResearchGroup = z.infer<typeof insertResearchGroupSchema>;
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Reaction = typeof reactions.$inferSelect;

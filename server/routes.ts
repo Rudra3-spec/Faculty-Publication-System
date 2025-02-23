@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
-import { insertPublicationSchema, updateUserSchema } from "@shared/schema";
+import { insertPublicationSchema, updateUserSchema, insertResearchGroupSchema, insertProjectSchema, insertCommentSchema } from "@shared/schema";
 import { generatePublicationSummary } from "./utils/summary";
 import multer from "multer";
 import path from "path";
@@ -377,6 +377,361 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+  // Research Groups API
+  app.post("/api/research-groups", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const parsed = insertResearchGroupSchema.parse(req.body);
+      const group = await storage.createResearchGroup({
+        ...parsed,
+        creatorId: req.user!.id,
+      });
+      res.status(201).json(group);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid research group data" });
+    }
+  });
+
+  app.get("/api/research-groups", async (req, res) => {
+    try {
+      const groups = await storage.getResearchGroups();
+      res.json(groups);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch research groups" });
+    }
+  });
+
+  app.get("/api/research-groups/:id", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const group = await storage.getResearchGroup(groupId);
+      if (!group) return res.sendStatus(404);
+      res.json(group);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch research group" });
+    }
+  });
+
+  app.put("/api/research-groups/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const groupId = parseInt(req.params.id);
+      const group = await storage.getResearchGroup(groupId);
+      if (!group) return res.sendStatus(404);
+      if (group.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      const parsed = insertResearchGroupSchema.partial().parse(req.body);
+      const updated = await storage.updateResearchGroup(groupId, parsed);
+      res.json(updated);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid update data" });
+    }
+  });
+
+  app.delete("/api/research-groups/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const groupId = parseInt(req.params.id);
+      const group = await storage.getResearchGroup(groupId);
+      if (!group) return res.sendStatus(404);
+      if (group.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      await storage.deleteResearchGroup(groupId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete research group" });
+    }
+  });
+
+  // Group Memberships API
+  app.post("/api/research-groups/:id/members", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const groupId = parseInt(req.params.id);
+      const { userId, role } = req.body;
+
+      const group = await storage.getResearchGroup(groupId);
+      if (!group) return res.sendStatus(404);
+      if (group.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      await storage.addGroupMember(groupId, userId, role);
+      res.sendStatus(201);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to add group member" });
+    }
+  });
+
+  app.delete("/api/research-groups/:groupId/members/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const groupId = parseInt(req.params.groupId);
+      const userId = parseInt(req.params.userId);
+
+      const group = await storage.getResearchGroup(groupId);
+      if (!group) return res.sendStatus(404);
+      if (group.creatorId !== req.user!.id && userId !== req.user!.id) {
+        return res.sendStatus(403);
+      }
+
+      await storage.removeGroupMember(groupId, userId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to remove group member" });
+    }
+  });
+
+  app.get("/api/research-groups/:id/members", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const members = await storage.getGroupMembers(groupId);
+      res.json(members);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch group members" });
+    }
+  });
+
+  // Projects API
+  app.post("/api/projects", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const parsed = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject({
+        ...parsed,
+        creatorId: req.user!.id,
+      });
+      res.status(201).json(project);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid project data" });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      if (!project) return res.sendStatus(404);
+      res.json(project);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  app.get("/api/research-groups/:id/projects", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const projects = await storage.getProjectsByGroup(groupId);
+      res.json(projects);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch group projects" });
+    }
+  });
+
+  app.put("/api/projects/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      if (!project) return res.sendStatus(404);
+      if (project.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      const parsed = insertProjectSchema.partial().parse(req.body);
+      const updated = await storage.updateProject(projectId, parsed);
+      res.json(updated);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid update data" });
+    }
+  });
+
+  app.delete("/api/projects/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      if (!project) return res.sendStatus(404);
+      if (project.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      await storage.deleteProject(projectId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
+  // Project Collaborators API
+  app.post("/api/projects/:id/collaborators", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const projectId = parseInt(req.params.id);
+      const { userId, role } = req.body;
+
+      const project = await storage.getProject(projectId);
+      if (!project) return res.sendStatus(404);
+      if (project.creatorId !== req.user!.id) return res.sendStatus(403);
+
+      await storage.addProjectCollaborator(projectId, userId, role);
+      res.sendStatus(201);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to add collaborator" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/collaborators/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const userId = parseInt(req.params.userId);
+
+      const project = await storage.getProject(projectId);
+      if (!project) return res.sendStatus(404);
+      if (project.creatorId !== req.user!.id && userId !== req.user!.id) {
+        return res.sendStatus(403);
+      }
+
+      await storage.removeProjectCollaborator(projectId, userId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to remove collaborator" });
+    }
+  });
+
+  app.get("/api/projects/:id/collaborators", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const collaborators = await storage.getProjectCollaborators(projectId);
+      res.json(collaborators);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch collaborators" });
+    }
+  });
+
+  // Comments API
+  app.post("/api/comments", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const parsed = insertCommentSchema.parse(req.body);
+      const comment = await storage.createComment({
+        ...parsed,
+        userId: req.user!.id,
+      });
+      res.status(201).json(comment);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid comment data" });
+    }
+  });
+
+  app.get("/api/comments/:id/replies", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.id);
+      const replies = await storage.getCommentsByParent(parentId);
+      res.json(replies);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch replies" });
+    }
+  });
+
+  app.get("/api/publications/:id/comments", async (req, res) => {
+    try {
+      const publicationId = parseInt(req.params.id);
+      const comments = await storage.getCommentsByPublication(publicationId);
+      res.json(comments);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.get("/api/projects/:id/comments", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const comments = await storage.getCommentsByProject(projectId);
+      res.json(comments);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.delete("/api/comments/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const commentId = parseInt(req.params.id);
+      const comment = await storage.getComment(commentId);
+      if (!comment) return res.sendStatus(404);
+      if (comment.userId !== req.user!.id) return res.sendStatus(403);
+
+      await storage.deleteComment(commentId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // Reactions API
+  app.post("/api/reactions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const { type, publicationId, projectId, commentId } = req.body;
+      if (!publicationId && !projectId && !commentId) {
+        return res.status(400).json({ message: "Target is required" });
+      }
+
+      await storage.addReaction(type, req.user!.id, {
+        publicationId,
+        projectId,
+        commentId,
+      });
+      res.sendStatus(201);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to add reaction" });
+    }
+  });
+
+  app.delete("/api/reactions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const { publicationId, projectId, commentId } = req.body;
+      if (!publicationId && !projectId && !commentId) {
+        return res.status(400).json({ message: "Target is required" });
+      }
+
+      await storage.removeReaction(req.user!.id, {
+        publicationId,
+        projectId,
+        commentId,
+      });
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to remove reaction" });
+    }
+  });
+
+  app.get("/api/reactions", async (req, res) => {
+    const { publicationId, projectId, commentId } = req.query;
+
+    try {
+      const reactions = await storage.getReactionsByTarget({
+        publicationId: publicationId ? parseInt(publicationId as string) : undefined,
+        projectId: projectId ? parseInt(projectId as string) : undefined,
+        commentId: commentId ? parseInt(commentId as string) : undefined,
+      });
+      res.json(reactions);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
