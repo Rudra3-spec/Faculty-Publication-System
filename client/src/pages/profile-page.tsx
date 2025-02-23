@@ -262,9 +262,25 @@ export default function ProfilePage() {
                     </CardDescription>
                   </div>
                 </div>
-                <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
-                  <Edit className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Add Publication
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Publication</DialogTitle>
+                      </DialogHeader>
+                      <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+                  <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {isEditMode ? (
@@ -1036,23 +1052,7 @@ export default function ProfilePage() {
         {/* Publications List */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Publications</CardTitle>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Publication
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Add New Publication</DialogTitle>
-                  </DialogHeader>
-                  <PublicationForm onSuccess={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
+            <CardTitle>Publications</CardTitle>
           </CardHeader>
           <CardContent>
             <PublicationList
