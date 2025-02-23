@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, FileText, Download } from "lucide-react";
+import { Plus, ArrowLeft, FileText, Download, Edit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Select,
@@ -24,6 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { updateUserSchema, UpdateUser } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import PublicationForm from "@/components/publication-form";
 import PublicationList from "@/components/publication-list";
 import { Publication } from "@shared/schema";
@@ -34,17 +43,52 @@ type SummaryFilter = "year" | "type" | "area";
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [summaryFormat, setSummaryFormat] = useState<SummaryFormat>("PDF");
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilter>("year");
+
+  const form = useForm<UpdateUser>({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      name: user?.name,
+      department: user?.department,
+      designation: user?.designation,
+      bio: user?.bio || "",
+      researchInterests: user?.researchInterests || "",
+      contactEmail: user?.contactEmail || "",
+    },
+  });
 
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
     queryKey: ["/api/publications/user", user?.id],
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: UpdateUser) => {
+      const res = await apiRequest("PUT", "/api/user/profile", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({ title: "Profile updated successfully" });
+      setIsEditMode(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error updating profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleGenerateSummary = async () => {
-    // TODO: Implement summary generation
-    console.log(`Generating ${summaryFormat} summary filtered by ${summaryFilter}`);
+    window.open(
+      `/api/publications/summary?format=${summaryFormat.toLowerCase()}&filter=${summaryFilter}`,
+      '_blank'
+    );
   };
 
   return (
@@ -61,29 +105,136 @@ export default function ProfilePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Profile Information */}
             <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">{user?.name}</CardTitle>
-                <CardDescription>
-                  {user?.designation} at {user?.department}
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold">{user?.name}</CardTitle>
+                  <CardDescription>
+                    {user?.designation} at {user?.department}
+                  </CardDescription>
+                </div>
+                <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {user?.bio && (
-                  <div>
-                    <h3 className="font-semibold mb-2">About</h3>
-                    <p className="text-muted-foreground">{user.bio}</p>
-                  </div>
-                )}
-                {user?.researchInterests && (
-                  <div>
-                    <h3 className="font-semibold mb-2">Research Interests</h3>
-                    <p className="text-muted-foreground">{user.researchInterests}</p>
-                  </div>
-                )}
-                {user?.contactEmail && (
-                  <div>
-                    <h3 className="font-semibold mb-2">Contact</h3>
-                    <p className="text-muted-foreground">{user.contactEmail}</p>
+              <CardContent>
+                {isEditMode ? (
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit((data) => updateProfileMutation.mutate(data))} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="department"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Department</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="designation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Designation</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} rows={3} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="researchInterests"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Research Interests</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="contactEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contact Email</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsEditMode(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                ) : (
+                  <div className="space-y-4">
+                    {user?.bio && (
+                      <div>
+                        <h3 className="font-semibold mb-2">About</h3>
+                        <p className="text-muted-foreground">{user.bio}</p>
+                      </div>
+                    )}
+                    {user?.researchInterests && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Research Interests</h3>
+                        <p className="text-muted-foreground">{user.researchInterests}</p>
+                      </div>
+                    )}
+                    {user?.contactEmail && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Contact</h3>
+                        <p className="text-muted-foreground">{user.contactEmail}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
