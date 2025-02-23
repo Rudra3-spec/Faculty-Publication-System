@@ -81,6 +81,7 @@ import {
 } from "recharts";
 
 import { SocialConnections } from "@/components/social-connections";
+import { FileDownload } from "lucide-react";
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -1014,6 +1015,43 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+
+        {publications.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Quick Downloads</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {publications
+                .filter(pub => pub.pdfUrl)
+                .map(pub => (
+                  <Card key={`download-${pub.id}`} className="p-4">
+                    <div className="flex items-start gap-3">
+                      <FileText className="h-5 w-5 mt-1 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium line-clamp-2">{pub.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{pub.year}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 w-full"
+                          asChild
+                        >
+                          <a
+                            href={pub.pdfUrl!}
+                            download={`${pub.title}.pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Publications List */}
         <Card>

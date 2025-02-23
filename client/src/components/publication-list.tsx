@@ -50,7 +50,7 @@ export default function PublicationList({
     queryKey: userId ? ["/api/publications", "user", userId] : ["/api/publications"],
     queryFn: async () => {
       const res = await apiRequest(
-        "GET", 
+        "GET",
         userId ? `/api/publications/user/${userId}` : "/api/publications"
       );
       const data = await res.json();
@@ -109,8 +109,8 @@ export default function PublicationList({
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {publications.map((publication) => (
-          <Card 
-            key={publication.id} 
+          <Card
+            key={publication.id}
             className="cursor-pointer transition-colors hover:bg-muted/50"
             onClick={() => setViewingPublication(publication)}
           >
@@ -180,67 +180,100 @@ export default function PublicationList({
 
       {/* Publication Detail Dialog */}
       <Dialog open={!!viewingPublication} onOpenChange={() => setViewingPublication(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewingPublication?.title}</DialogTitle>
+            <DialogTitle className="text-2xl">{viewingPublication?.title}</DialogTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{viewingPublication?.type}</span>
+              <span>•</span>
+              <span>{viewingPublication?.year}</span>
+            </div>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-1">Authors</h3>
-              <p>{viewingPublication?.authors}</p>
-            </div>
-            <div>
-              <h3 className="font-medium mb-1">Published in</h3>
-              <p>{viewingPublication?.venue}, {viewingPublication?.year}</p>
-            </div>
-            {viewingPublication?.doi && (
-              <div>
-                <h3 className="font-medium mb-1">DOI</h3>
-                <a
-                  href={`https://doi.org/${viewingPublication.doi}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary flex items-center gap-1 hover:underline"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {viewingPublication.doi}
-                </a>
-              </div>
-            )}
-            <div>
-              <h3 className="font-medium mb-1">Abstract</h3>
-              <p className="text-muted-foreground">{viewingPublication?.abstract}</p>
-            </div>
-            <div>
-              <h3 className="font-medium mb-1">Keywords</h3>
-              <p className="text-muted-foreground">{viewingPublication?.keywords}</p>
-            </div>
-            {viewingPublication?.researchArea && (
-              <div>
-                <h3 className="font-medium mb-1">Research Area</h3>
-                <p className="text-muted-foreground">{viewingPublication.researchArea}</p>
-              </div>
-            )}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Publication Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium text-primary mb-1">Authors</h3>
+                  <p className="text-lg">{viewingPublication?.authors}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-primary mb-1">Published in</h3>
+                  <p className="text-lg">{viewingPublication?.venue}</p>
+                </div>
+                {viewingPublication?.doi && (
+                  <div>
+                    <h3 className="font-medium text-primary mb-1">DOI</h3>
+                    <a
+                      href={`https://doi.org/${viewingPublication.doi}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-lg text-primary flex items-center gap-2 hover:underline"
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                      {viewingPublication.doi}
+                    </a>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Research Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium text-primary mb-2">Abstract</h3>
+                  <p className="text-muted-foreground leading-relaxed">{viewingPublication?.abstract}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-primary mb-2">Keywords</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingPublication?.keywords.split(',').map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-muted rounded-md text-sm"
+                      >
+                        {keyword.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {viewingPublication?.researchArea && (
+                  <div>
+                    <h3 className="font-medium text-primary mb-2">Research Area</h3>
+                    <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-md">
+                      {viewingPublication.researchArea}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {viewingPublication?.pdfUrl && (
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-4">
                 <Button
-                  variant="outline"
+                  size="lg"
+                  className="flex-1"
                   onClick={() => {
                     setViewingPublication(null);
                     setViewingPdf(viewingPublication);
                   }}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View PDF
+                  <Eye className="h-5 w-5 mr-2" />
+                  View Full Paper
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" size="lg" className="flex-1" asChild>
                   <a
                     href={viewingPublication.pdfUrl}
                     download={`${viewingPublication.title}.pdf`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="h-5 w-5 mr-2" />
                     Download PDF
                   </a>
                 </Button>
