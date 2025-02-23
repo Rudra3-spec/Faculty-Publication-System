@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Book, BookOpen, FileText, Filter } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import PublicationList from "@/components/publication-list";
 import SearchFilter from "@/components/search-filter";
 import { Publication } from "@shared/schema";
@@ -24,11 +24,6 @@ export default function HomePage() {
       ? ["/api/publications/search", { q: searchQuery }]
       : ["/api/publications"],
   });
-
-  // Calculate statistics
-  const totalPublications = publications.length;
-  const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations || 0), 0);
-  const researchAreas = [...new Set(publications.map(pub => pub.researchArea || 'Uncategorized'))];
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,59 +54,6 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Dashboard Stats */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Publications
-              </CardTitle>
-              <Book className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalPublications}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Citations
-              </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalCitations}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Research Areas
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{researchAreas.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Latest Update
-              </CardTitle>
-              <Filter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground">
-                {publications[0]?.updatedAt ? new Date(publications[0].updatedAt).toLocaleDateString() : 'No publications'}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Search */}
         <div className="mb-8">
           <SearchFilter 
@@ -123,9 +65,9 @@ export default function HomePage() {
         {/* Publications List */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Publications</CardTitle>
+            <CardTitle>All Publications</CardTitle>
             <CardDescription>
-              Your latest research work and contributions
+              Browse through all research work and contributions
             </CardDescription>
           </CardHeader>
           <CardContent>

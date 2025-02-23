@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, FileText, Download, Edit } from "lucide-react";
+import { Plus, ArrowLeft, FileText, Download, Edit, Book, BookOpen, Filter } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +64,11 @@ export default function ProfilePage() {
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
     queryKey: ["/api/publications/user", user?.id],
   });
+
+  // Calculate statistics
+  const totalPublications = publications.length;
+  const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations || 0), 0);
+  const researchAreas = [...new Set(publications.map(pub => pub.researchArea || 'Uncategorized'))];
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: UpdateUser) => {
@@ -297,6 +302,58 @@ export default function ProfilePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Dashboard Stats */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Publications
+              </CardTitle>
+              <Book className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalPublications}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Citations
+              </CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalCitations}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Research Areas
+              </CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{researchAreas.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Latest Update
+              </CardTitle>
+              <Filter className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">
+                {publications[0]?.updatedAt ? new Date(publications[0].updatedAt).toLocaleDateString() : 'No publications'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Publications</h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
