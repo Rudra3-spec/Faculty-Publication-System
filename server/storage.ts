@@ -80,7 +80,7 @@ export interface IStorage {
   deleteComment(id: number): Promise<void>;
 
   // Reactions
-  addReaction(type: string, userId: number, target: { 
+  addReaction(type: string, userId: number, target: {
     publicationId?: number;
     projectId?: number;
     commentId?: number;
@@ -104,20 +104,44 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
     });
   }
 
   // Keep existing method implementations...
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        password: users.password,
+        name: users.name,
+        isAdmin: users.is_admin,
+        department: users.department,
+        designation: users.designation,
+        // Add other fields as needed
+      })
+      .from(users)
+      .where(eq(users.id, id));
     return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        password: users.password,
+        name: users.name,
+        isAdmin: users.is_admin,
+        department: users.department,
+        designation: users.designation,
+        // Add other fields as needed
+      })
+      .from(users)
+      .where(eq(users.username, username));
     return user;
   }
 
@@ -197,7 +221,10 @@ export class DatabaseStorage implements IStorage {
   async updateUser(id: number, userData: Partial<UpdateUser>): Promise<User> {
     const [user] = await db
       .update(users)
-      .set(userData)
+      .set({
+        ...userData,
+        updatedAt: new Date(),
+      })
       .where(eq(users.id, id))
       .returning();
     return user;
