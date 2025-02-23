@@ -6,8 +6,8 @@ import { Loader2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-reac
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
-// Set worker source
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Set worker source using local file from node_modules
+pdfjs.GlobalWorkerOptions.workerSrc = `/node_modules/pdfjs-dist/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   url: string;
@@ -36,7 +36,7 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh]">
+      <DialogContent className="max-w-4xl h-[90vh] overflow-hidden">
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
@@ -85,16 +85,21 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
             <Document
               file={url}
               onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={(error) => setError(error)}
+              onLoadError={(error) => {
+                console.error("Error loading PDF:", error);
+                setError(error);
+              }}
               loading={
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               }
               error={
-                <div className="flex flex-col items-center justify-center h-full text-destructive">
-                  <p>Error loading PDF</p>
-                  <p className="text-sm">{error?.message}</p>
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive">
+                  <p className="font-medium">Error loading PDF</p>
+                  <p className="text-sm text-muted-foreground">
+                    {error?.message || "Please try again later"}
+                  </p>
                 </div>
               }
             >
@@ -106,6 +111,7 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
                     <Loader2 className="h-8 w-8 animate-spin" />
                   </div>
                 }
+                className="shadow-lg"
               />
             </Document>
           </div>
