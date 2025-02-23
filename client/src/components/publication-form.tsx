@@ -47,7 +47,7 @@ const YEARS = Array.from(
   (_, i) => CURRENT_YEAR - i
 );
 
-export default function PublicationForm({ 
+export default function PublicationForm({
   publication,
   publicationId,
   onSuccess
@@ -80,7 +80,9 @@ export default function PublicationForm({
       return res.json();
     },
     onSuccess: () => {
+      // Invalidate both search and user publication queries
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/publications/search"] });
       queryClient.invalidateQueries({ queryKey: ["/api/publications/user", user?.id] });
       toast({
         title: `Publication ${publicationId ? "updated" : "added"} successfully`,
@@ -98,7 +100,7 @@ export default function PublicationForm({
 
   return (
     <Form {...form}>
-      <form 
+      <form
         onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
         className="space-y-6"
       >
@@ -148,8 +150,8 @@ export default function PublicationForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Year <span className="text-destructive">*</span></FormLabel>
-                <Select 
-                  onValueChange={(value) => field.onChange(parseInt(value))} 
+                <Select
+                  onValueChange={(value) => field.onChange(parseInt(value))}
                   value={field.value.toString()}
                 >
                   <FormControl>
@@ -275,8 +277,8 @@ export default function PublicationForm({
               <FormLabel>PDF Document</FormLabel>
               <FormControl>
                 <div className="flex gap-4 items-center">
-                  <Input 
-                    type="file" 
+                  <Input
+                    type="file"
                     accept=".pdf"
                     className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                     onChange={(e) => {
@@ -288,8 +290,8 @@ export default function PublicationForm({
                     {...field}
                   />
                   {value && (
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       variant="outline"
                       size="icon"
                       className="shrink-0"
