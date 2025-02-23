@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, InsertUser } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
@@ -150,9 +150,12 @@ function RegisterForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Username
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} placeholder="Choose a username" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -163,9 +166,12 @@ function RegisterForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Email
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
-                <Input type="email" {...field} />
+                <Input type="email" {...field} placeholder="Enter your email" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,10 +182,26 @@ function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Password
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input 
+                  type="password" 
+                  {...field} 
+                  placeholder="Create a strong password" 
+                />
               </FormControl>
+              <FormDescription className="text-xs space-y-1">
+                Password must contain:
+                <ul className="list-disc list-inside">
+                  <li>At least 8 characters</li>
+                  <li>One uppercase letter</li>
+                  <li>One lowercase letter</li>
+                  <li>One number</li>
+                </ul>
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -189,7 +211,10 @@ function RegisterForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Full Name
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -202,7 +227,10 @@ function RegisterForm() {
           name="department"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Department</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Department
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -215,7 +243,10 @@ function RegisterForm() {
           name="designation"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Designation</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Designation
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>

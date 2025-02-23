@@ -4,7 +4,11 @@ import { z } from "zod";
 
 const userBaseSchema = {
   username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   department: z.string().min(1, "Department is required"),
@@ -93,7 +97,7 @@ export const insertUserSchema = z.object(userBaseSchema);
 
 export const updateUserSchema = z.object({
   ...userBaseSchema,
-  password: z.string().min(6, "Password must be at least 6 characters").optional(),
+  password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number").optional(),
 }).partial();
 
 export const insertPublicationSchema = createInsertSchema(publications).pick({
