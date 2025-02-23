@@ -52,7 +52,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import ResearchImpactDashboard from "@/components/research-impact-dashboard";
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -819,10 +818,90 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Research Impact Dashboard */}
-      <div className="container mx-auto px-4 py-6">
-        <ResearchImpactDashboard publications={publications} />
-      </div>
+      {(user?.linkedinUrl ||
+        user?.googleScholarUrl ||
+        user?.researchGateUrl ||
+        user?.twitterUrl ||
+        user?.facebookUrl ||
+        user?.instagramUrl) && (
+        <div className="container mx-auto px-4 py-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Professional & Social Media Links</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4">
+                {user?.linkedinUrl && (
+                  <a
+                    href={user.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiLinkedin className="h-5 w-5 text-[#0A66C2]" />
+                    <span className="text-sm font-medium">LinkedIn</span>
+                  </a>
+                )}
+                {user?.googleScholarUrl && (
+                  <a
+                    href={user.googleScholarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiGooglescholar className="h-5 w-5 text-[#4285F4]" />
+                    <span className="text-sm font-medium">Google Scholar</span>
+                  </a>
+                )}
+                {user?.researchGateUrl && (
+                  <a
+                    href={user.researchGateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiResearchgate className="h-5 w-5 text-[#00CCBB]" />
+                    <span className="text-sm font-medium">ResearchGate</span>
+                  </a>
+                )}
+                {user?.twitterUrl && (
+                  <a
+                    href={user.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiX className="h-5 w-5" />
+                    <span className="text-sm font-medium">Twitter</span>
+                  </a>
+                )}
+                {user?.facebookUrl && (
+                  <a
+                    href={user.facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiFacebook className="h-5 w-5 text-[#1877F2]" />
+                    <span className="text-sm font-medium">Facebook</span>
+                  </a>
+                )}
+                {user?.instagramUrl && (
+                  <a
+                    href={user.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors"
+                  >
+                    <SiInstagram className="h-5 w-5 text-[#E4405F]" />
+                    <span className="text-sm font-medium">Instagram</span>
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-3 gap-6">
