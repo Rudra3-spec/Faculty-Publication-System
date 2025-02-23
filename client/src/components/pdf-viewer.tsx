@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -19,11 +19,12 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Configure PDF.js worker with a direct path to node_modules
-    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.mjs',
+    // Configure worker using a relative path that Vite can handle
+    const workerUrl = new URL(
+      '../../../node_modules/pdfjs-dist/build/pdf.worker.mjs',
       import.meta.url
-    ).href;
+    ).toString();
+    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
   }, []);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -42,6 +43,7 @@ export default function PDFViewer({ url, open, onOpenChange }: PDFViewerProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] overflow-hidden">
+        <DialogTitle className="sr-only">PDF Viewer</DialogTitle>
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
