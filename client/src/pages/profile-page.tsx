@@ -75,6 +75,8 @@ export default function ProfilePage() {
       officeLocation: user?.officeLocation || "",
       college: user?.college || "",
       school: user?.school || "",
+      almaCollege: user?.almaCollege || "",
+      almaSchool: user?.almaSchool || "",
     },
   });
 
@@ -384,16 +386,16 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <h3 className="font-medium">Academic Information</h3>
+                        <h3 className="font-medium">Current Institution</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="college"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>College/University</FormLabel>
+                                <FormLabel>Current Institution</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="Enter your college/university name" />
+                                  <Input {...field} placeholder="Institution where you work" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -404,9 +406,39 @@ export default function ProfilePage() {
                             name="school"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>School</FormLabel>
+                                <FormLabel>Current Department/School</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="Enter your school name" />
+                                  <Input {...field} placeholder="Department/School where you work" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <h3 className="font-medium">Educational Background</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="almaCollege"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Alma Mater Institution</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Institution where you studied" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="almaSchool"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Alma Mater School</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="School where you studied" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -427,7 +459,6 @@ export default function ProfilePage() {
                             </FormItem>
                           )}
                         />
-
                         <FormField
                           control={form.control}
                           name="awards"
@@ -587,6 +618,28 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     )}
+                    {user?.college && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Current Institution</h3>
+                        <p className="text-muted-foreground">{user.college}</p>
+                        {user?.school && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Department/School: {user.school}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {user?.almaCollege && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Alma Mater</h3>
+                        <p className="text-muted-foreground">{user.almaCollege}</p>
+                        {user?.almaSchool && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            School: {user.almaSchool}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {user?.education && (
                       <div>
                         <h3 className="font-semibold mb-2">Education</h3>
@@ -613,18 +666,6 @@ export default function ProfilePage() {
                         </div>
                       )}
                     </div>
-                    {user?.college && (
-                      <div>
-                        <h3 className="font-semibold mb-2">College/University</h3>
-                        <p className="text-muted-foreground">{user.college}</p>
-                      </div>
-                    )}
-                    {user?.school && (
-                      <div>
-                        <h3 className="font-semibold mb-2">School</h3>
-                        <p className="text-muted-foreground">{user.school}</p>
-                      </div>
-                    )}
                   </div>
                 )}
               </CardContent>

@@ -28,8 +28,11 @@ export const users = pgTable("users", {
   officeHours: text("office_hours"),
   officeLocation: text("office_location"),
   // Academic background
-  college: text("college"),
-  school: text("school"),
+  college: text("college"), // Current institution where working
+  school: text("school"), // Current school/department where working
+  // Educational background
+  almaCollege: text("alma_college"), // Institution where studied
+  almaSchool: text("alma_school"), // School where studied
 });
 
 export const publications = pgTable("publications", {
@@ -37,7 +40,7 @@ export const publications = pgTable("publications", {
   title: text("title").notNull(),
   type: text("type").notNull(),
   authors: text("authors").notNull(),
-  venue: text("venue").notNull(), // Journal/Conference name
+  venue: text("venue").notNull(),
   year: integer("year").notNull(),
   doi: text("doi"),
   abstract: text("abstract").notNull(),
@@ -73,6 +76,8 @@ const userBaseSchema = {
   officeLocation: z.string().optional(),
   college: z.string().optional(),
   school: z.string().optional(),
+  almaCollege: z.string().optional(),
+  almaSchool: z.string().optional(),
 };
 
 export const insertUserSchema = z.object(userBaseSchema);
