@@ -66,6 +66,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch"; // Import the Switch component
 import {
   BarChart,
   Bar,
@@ -79,6 +80,7 @@ import {
   Cell,
 } from "recharts";
 
+import { SocialConnections } from "@/components/social-connections";
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -126,6 +128,8 @@ export default function ProfilePage() {
       currentState: user?.currentState || "",
       almaCity: user?.almaCity || "",
       almaState: user?.almaState || "",
+      isPublic: user?.isPublic || false, // Add isPublic field to defaultValues
+
     },
   });
 
@@ -251,6 +255,23 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <FormField
+                    control={form.control}
+                    name="isPublic"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2">
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal">
+                          {field.value ? "Public Profile" : "Private Profile"}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
                   <Button variant="outline" size="icon" onClick={() => setIsEditMode(!isEditMode)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -988,6 +1009,14 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground">
                 Publications in the last month
               </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Connections</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SocialConnections userId={user?.id || 0} />
             </CardContent>
           </Card>
         </div>

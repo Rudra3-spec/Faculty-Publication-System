@@ -260,6 +260,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(summary.content);
   });
 
+  // Social Features Routes
+
+  // Follow/Unfollow
+  app.post("/api/users/:id/follow", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const followingId = parseInt(req.params.id);
+    if (followingId === req.user!.id) {
+      return res.status(400).json({ message: "Cannot follow yourself" });
+    }
+
+    try {
+      await storage.followUser(req.user!.id, followingId);
+      res.sendStatus(200);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to follow user" });
+    }
+  });
+
+  app.post("/api/users/:id/unfollow", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const followingId = parseInt(req.params.id);
+    try {
+      await storage.unfollowUser(req.user!.id, followingId);
+      res.sendStatus(200);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to unfollow user" });
+    }
+  });
+
+  // Get followers/following
+  app.get("/api/users/:id/followers", async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try {
+      const followers = await storage.getFollowers(userId);
+      res.json(followers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to get followers" });
+    }
+  });
+
+  app.get("/api/users/:id/following", async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try {
+      const following = await storage.getFollowing(userId);
+      res.json(following);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to get following" });
+    }
+  });
+
+  // Check if following
+  app.get("/api/users/:id/is-following", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const followingId = parseInt(req.params.id);
+    try {
+      const isFollowing = await storage.isFollowing(req.user!.id, followingId);
+      res.json({ isFollowing });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to check following status" });
+    }
+  });
+
+  // Friend Requests
+  app.post("/api/friend-requests/send/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const receiverId = parseInt(req.params.id);
+    if (receiverId === req.user!.id) {
+      return res.status(400).json({ message: "Cannot send friend request to yourself" });
+    }
+
+    try {
+      await storage.sendFriendRequest(req.user!.id, receiverId);
+      res.sendStatus(201);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to send friend request" });
+    }
+  });
+
+  app.post("/api/friend-requests/:id/accept", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const requestId = parseInt(req.params.id);
+    try {
+      await storage.acceptFriendRequest(requestId);
+      res.sendStatus(200);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to accept friend request" });
+    }
+  });
+
+  app.post("/api/friend-requests/:id/reject", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const requestId = parseInt(req.params.id);
+    try {
+      await storage.rejectFriendRequest(requestId);
+      res.sendStatus(200);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to reject friend request" });
+    }
+  });
+
+  app.get("/api/friend-requests", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const requests = await storage.getFriendRequests(req.user!.id);
+      res.json(requests);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to get friend requests" });
+    }
+  });
+
+
   const httpServer = createServer(app);
   return httpServer;
 }
