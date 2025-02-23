@@ -65,7 +65,6 @@ export default function ProfilePage() {
       linkedinUrl: user?.linkedinUrl || "",
       googleScholarUrl: user?.googleScholarUrl || "",
       researchGateUrl: user?.researchGateUrl || "",
-      orcidId: user?.orcidId || "",
       twitterUrl: user?.twitterUrl || "",
       facebookUrl: user?.facebookUrl || "",
       instagramUrl: user?.instagramUrl || "",
@@ -74,6 +73,8 @@ export default function ProfilePage() {
       awards: user?.awards || "",
       officeHours: user?.officeHours || "",
       officeLocation: user?.officeLocation || "",
+      college: user?.college || "",
+      school: user?.school || "",
     },
   });
 
@@ -334,22 +335,6 @@ export default function ProfilePage() {
                           />
                           <FormField
                             control={form.control}
-                            name="orcidId"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Link2 className="h-4 w-4" />
-                                  ORCID ID
-                                </FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="0000-0000-0000-0000" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
                             name="twitterUrl"
                             render={({ field }) => (
                               <FormItem>
@@ -400,14 +385,43 @@ export default function ProfilePage() {
                       </div>
                       <div className="space-y-4">
                         <h3 className="font-medium">Academic Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="college"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>College/University</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Enter your college/university name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="school"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>School</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Enter your school name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
                         <FormField
                           control={form.control}
                           name="education"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Education</FormLabel>
+                              <FormLabel>Additional Education</FormLabel>
                               <FormControl>
-                                <Textarea {...field} placeholder="Enter your educational background" />
+                                <Textarea {...field} placeholder="Enter any additional educational background" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -498,7 +512,6 @@ export default function ProfilePage() {
                     {(user?.linkedinUrl ||
                       user?.googleScholarUrl ||
                       user?.researchGateUrl ||
-                      user?.orcidId ||
                       user?.twitterUrl ||
                       user?.facebookUrl ||
                       user?.instagramUrl) && (
@@ -536,17 +549,6 @@ export default function ProfilePage() {
                             >
                               <SiResearchgate className="h-4 w-4" />
                               ResearchGate
-                            </a>
-                          )}
-                          {user?.orcidId && (
-                            <a
-                              href={`https://orcid.org/${user.orcidId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
-                            >
-                              <Link2 className="h-4 w-4" />
-                              ORCID
                             </a>
                           )}
                           {user?.twitterUrl && (
@@ -611,6 +613,18 @@ export default function ProfilePage() {
                         </div>
                       )}
                     </div>
+                    {user?.college && (
+                      <div>
+                        <h3 className="font-semibold mb-2">College/University</h3>
+                        <p className="text-muted-foreground">{user.college}</p>
+                      </div>
+                    )}
+                    {user?.school && (
+                      <div>
+                        <h3 className="font-semibold mb-2">School</h3>
+                        <p className="text-muted-foreground">{user.school}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

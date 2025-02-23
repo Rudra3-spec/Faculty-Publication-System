@@ -18,7 +18,6 @@ export const users = pgTable("users", {
   linkedinUrl: text("linkedin_url"),
   googleScholarUrl: text("google_scholar_url"),
   researchGateUrl: text("research_gate_url"),
-  orcidId: text("orcid_id"),
   twitterUrl: text("twitter_url"),
   facebookUrl: text("facebook_url"),
   instagramUrl: text("instagram_url"),
@@ -28,6 +27,9 @@ export const users = pgTable("users", {
   awards: text("awards"),
   officeHours: text("office_hours"),
   officeLocation: text("office_location"),
+  // Academic background
+  college: text("college"),
+  school: text("school"),
 });
 
 export const publications = pgTable("publications", {
@@ -58,18 +60,19 @@ const userBaseSchema = {
   researchInterests: z.string().optional(),
   contactEmail: z.string().email().optional(),
   profilePicture: z.string().optional(),
-  linkedinUrl: z.string().url().optional(),
-  googleScholarUrl: z.string().url().optional(),
-  researchGateUrl: z.string().url().optional(),
-  orcidId: z.string().optional(),
-  twitterUrl: z.string().url().optional(),
-  facebookUrl: z.string().url().optional(),
-  instagramUrl: z.string().url().optional(),
-  personalWebsite: z.string().url().optional(),
+  linkedinUrl: z.string().optional(),
+  googleScholarUrl: z.string().optional(),
+  researchGateUrl: z.string().optional(),
+  twitterUrl: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  instagramUrl: z.string().optional(),
+  personalWebsite: z.string().optional(),
   education: z.string().optional(),
   awards: z.string().optional(),
   officeHours: z.string().optional(),
   officeLocation: z.string().optional(),
+  college: z.string().optional(),
+  school: z.string().optional(),
 };
 
 export const insertUserSchema = z.object(userBaseSchema);
