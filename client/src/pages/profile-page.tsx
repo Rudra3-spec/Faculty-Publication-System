@@ -38,7 +38,7 @@ import { Publication } from "@shared/schema";
 import { Link } from "wouter";
 import ImpactVisualization from "@/components/impact-visualization";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { SiGooglescholar, SiLinkedin, SiResearchgate, SiX } from "react-icons/si";
+import { SiGooglescholar, SiLinkedin, SiResearchgate, SiX, SiFacebook, SiInstagram } from "react-icons/si";
 
 
 type SummaryFormat = "PDF" | "Word" | "Web";
@@ -66,7 +66,14 @@ export default function ProfilePage() {
       googleScholarUrl: user?.googleScholarUrl || "",
       researchGateUrl: user?.researchGateUrl || "",
       orcidId: user?.orcidId || "",
-      twitterUrl: user?.twitterUrl || ""
+      twitterUrl: user?.twitterUrl || "",
+      facebookUrl: user?.facebookUrl || "",
+      instagramUrl: user?.instagramUrl || "",
+      personalWebsite: user?.personalWebsite || "",
+      education: user?.education || "",
+      awards: user?.awards || "",
+      officeHours: user?.officeHours || "",
+      officeLocation: user?.officeLocation || "",
     },
   });
 
@@ -357,6 +364,98 @@ export default function ProfilePage() {
                               </FormItem>
                             )}
                           />
+                          <FormField
+                            control={form.control}
+                            name="facebookUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiFacebook className="h-4 w-4" />
+                                  Facebook
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://facebook.com/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="instagramUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <SiInstagram className="h-4 w-4" />
+                                  Instagram
+                                </FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://instagram.com/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Academic Information</h3>
+                        <FormField
+                          control={form.control}
+                          name="education"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Education</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} placeholder="Enter your educational background" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="awards"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Awards & Honors</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} placeholder="List your academic awards and honors" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="officeHours"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Office Hours</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="e.g., Mon-Wed 2-4 PM" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="officeLocation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Office Location</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="e.g., Building A, Room 123" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
                       <div className="flex justify-end gap-2">
@@ -400,7 +499,9 @@ export default function ProfilePage() {
                       user?.googleScholarUrl ||
                       user?.researchGateUrl ||
                       user?.orcidId ||
-                      user?.twitterUrl) && (
+                      user?.twitterUrl ||
+                      user?.facebookUrl ||
+                      user?.instagramUrl) && (
                       <div>
                         <h3 className="font-semibold mb-3">Professional Links</h3>
                         <div className="flex flex-wrap gap-3">
@@ -459,9 +560,57 @@ export default function ProfilePage() {
                               Twitter
                             </a>
                           )}
+                          {user?.facebookUrl && (
+                            <a
+                              href={user.facebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiFacebook className="h-4 w-4" />
+                              Facebook
+                            </a>
+                          )}
+                          {user?.instagramUrl && (
+                            <a
+                              href={user.instagramUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted hover:bg-muted/80"
+                            >
+                              <SiInstagram className="h-4 w-4" />
+                              Instagram
+                            </a>
+                          )}
                         </div>
                       </div>
                     )}
+                    {user?.education && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Education</h3>
+                        <p className="text-muted-foreground whitespace-pre-line">{user.education}</p>
+                      </div>
+                    )}
+                    {user?.awards && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Awards & Honors</h3>
+                        <p className="text-muted-foreground whitespace-pre-line">{user.awards}</p>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {user?.officeHours && (
+                        <div>
+                          <h3 className="font-semibold mb-2">Office Hours</h3>
+                          <p className="text-muted-foreground">{user.officeHours}</p>
+                        </div>
+                      )}
+                      {user?.officeLocation && (
+                        <div>
+                          <h3 className="font-semibold mb-2">Office Location</h3>
+                          <p className="text-muted-foreground">{user.officeLocation}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>

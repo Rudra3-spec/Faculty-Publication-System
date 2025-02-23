@@ -14,12 +14,20 @@ export const users = pgTable("users", {
   researchInterests: text("research_interests"),
   contactEmail: text("contact_email"),
   profilePicture: text("profile_picture"),
-  // Add social media fields
+  // Social media fields
   linkedinUrl: text("linkedin_url"),
   googleScholarUrl: text("google_scholar_url"),
   researchGateUrl: text("research_gate_url"),
   orcidId: text("orcid_id"),
   twitterUrl: text("twitter_url"),
+  facebookUrl: text("facebook_url"),
+  instagramUrl: text("instagram_url"),
+  // Additional personal info
+  personalWebsite: text("personal_website"),
+  education: text("education"),
+  awards: text("awards"),
+  officeHours: text("office_hours"),
+  officeLocation: text("office_location"),
 });
 
 export const publications = pgTable("publications", {
@@ -55,6 +63,13 @@ const userBaseSchema = {
   researchGateUrl: z.string().url().optional(),
   orcidId: z.string().optional(),
   twitterUrl: z.string().url().optional(),
+  facebookUrl: z.string().url().optional(),
+  instagramUrl: z.string().url().optional(),
+  personalWebsite: z.string().url().optional(),
+  education: z.string().optional(),
+  awards: z.string().optional(),
+  officeHours: z.string().optional(),
+  officeLocation: z.string().optional(),
 };
 
 export const insertUserSchema = z.object(userBaseSchema);
