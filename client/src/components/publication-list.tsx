@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Download, ExternalLink } from "lucide-react";
+import { Edit, Trash2, Download, ExternalLink, Loader2 } from "lucide-react";
 import PublicationForm from "./publication-form";
 
 interface PublicationListProps {
