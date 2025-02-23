@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Upload } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -72,7 +73,6 @@ export default function PublicationForm({
 
   const mutation = useMutation({
     mutationFn: async (data: InsertPublication) => {
-      // Ensure userId is included in the data
       const publicationData = {
         ...data,
         userId: user?.id,
@@ -110,46 +110,93 @@ export default function PublicationForm({
   });
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
-        className="space-y-6"
-      >
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <ScrollArea className="h-[80vh] px-6">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+          className="space-y-6 pb-10"
+        >
           <FormField
             control={form.control}
-            name="type"
+            name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type <span className="text-destructive">*</span></FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PUBLICATION_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PUBLICATION_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="year"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Year <span className="text-destructive">*</span></FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    value={field.value.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {YEARS.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="authors"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Authors <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>
+                  Enter authors' names separated by commas
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -157,183 +204,138 @@ export default function PublicationForm({
 
           <FormField
             control={form.control}
-            name="year"
+            name="venue"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Year <span className="text-destructive">*</span></FormLabel>
-                <Select
-                  onValueChange={(value) => field.onChange(parseInt(value))}
-                  value={field.value.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {YEARS.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Journal/Conference Name <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="authors"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Authors <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormDescription>
-                Enter authors' names separated by commas
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="venue"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Journal/Conference Name <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="doi"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>DOI</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  value={field.value || ""}
-                  placeholder="e.g., 10.1000/xyz123" 
-                />
-              </FormControl>
-              <FormDescription>
-                Digital Object Identifier (optional)
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="abstract"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Abstract <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <Textarea {...field} rows={5} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="keywords"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Keywords <span className="text-destructive">*</span></FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="e.g., machine learning, artificial intelligence, neural networks" />
-              </FormControl>
-              <FormDescription>
-                Enter keywords separated by commas
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="researchArea"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Research Area</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  value={field.value || ""}
-                  placeholder="e.g., Computer Science, Machine Learning" 
-                />
-              </FormControl>
-              <FormDescription>
-                Main research area for this publication
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="pdfUrl"
-          render={({ field: { value, onChange, ...field } }) => (
-            <FormItem>
-              <FormLabel>PDF Document</FormLabel>
-              <FormControl>
-                <div className="flex gap-4 items-center">
-                  <Input
-                    type="file"
-                    accept=".pdf"
-                    className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        onChange(URL.createObjectURL(file));
-                      }
-                    }}
-                    {...field}
+          <FormField
+            control={form.control}
+            name="doi"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>DOI</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    value={field.value || ""}
+                    placeholder="e.g., 10.1000/xyz123" 
                   />
-                  {value && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() => onChange("")}
-                    >
-                      <Upload className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </FormControl>
-              <FormDescription>
-                Upload a PDF version of your publication (optional)
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                </FormControl>
+                <FormDescription>
+                  Digital Object Identifier (optional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
-          {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {publicationId ? "Update" : "Add"} Publication
-        </Button>
-      </form>
-    </Form>
+          <FormField
+            control={form.control}
+            name="abstract"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Abstract <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={5} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="keywords"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Keywords <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="e.g., machine learning, artificial intelligence, neural networks" />
+                </FormControl>
+                <FormDescription>
+                  Enter keywords separated by commas
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="researchArea"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Research Area</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    value={field.value || ""}
+                    placeholder="e.g., Computer Science, Machine Learning" 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Main research area for this publication
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="pdfUrl"
+            render={({ field: { value, onChange, ...field } }) => (
+              <FormItem>
+                <FormLabel>PDF Document</FormLabel>
+                <FormControl>
+                  <div className="flex gap-4 items-center">
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          onChange(URL.createObjectURL(file));
+                        }
+                      }}
+                      {...field}
+                    />
+                    {value && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0"
+                        onClick={() => onChange("")}
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  Upload a PDF version of your publication (optional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {publicationId ? "Update" : "Add"} Publication
+          </Button>
+        </form>
+      </Form>
+    </ScrollArea>
   );
 }

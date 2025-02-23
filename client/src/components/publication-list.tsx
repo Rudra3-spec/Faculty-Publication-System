@@ -31,10 +31,10 @@ interface PublicationListProps {
   showActions: boolean;
 }
 
-export default function PublicationList({ 
-  publications, 
+export default function PublicationList({
+  publications,
   isLoading,
-  showActions 
+  showActions
 }: PublicationListProps) {
   const [editPublication, setEditPublication] = useState<Publication | null>(null);
   const [deletePublication, setDeletePublication] = useState<Publication | null>(null);
@@ -135,7 +135,7 @@ export default function PublicationList({
                         size="sm"
                         asChild
                       >
-                        <a 
+                        <a
                           href={publication.pdfUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -153,8 +153,8 @@ export default function PublicationList({
       </div>
 
       <Dialog open={!!editPublication} onOpenChange={() => setEditPublication(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>Edit Publication</DialogTitle>
           </DialogHeader>
           {editPublication && (
@@ -167,7 +167,7 @@ export default function PublicationList({
         </DialogContent>
       </Dialog>
 
-      <AlertDialog 
+      <AlertDialog
         open={!!deletePublication}
         onOpenChange={() => setDeletePublication(null)}
       >
