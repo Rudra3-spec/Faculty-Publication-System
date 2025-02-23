@@ -46,9 +46,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/publications/search", async (req, res) => {
     const query = req.query.q as string;
-    if (!query) return res.json([]);
+    const type = req.query.type as string;
+    const year = req.query.year as string;
 
-    const results = await storage.searchPublications(query);
+    let results = await storage.searchPublications(query || "");
+
+    // Apply filters if they're not set to "All"
+    if (type && type !== "All Types") {
+      results = results.filter(pub => pub.type === type);
+    }
+
+    if (year && year !== "All Years") {
+      results = results.filter(pub => pub.year.toString() === year);
+    }
+
     res.json(results);
   });
 

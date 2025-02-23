@@ -17,12 +17,14 @@ import {
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useState({
+    query: "",
+    type: "All Types",
+    year: "All Years"
+  });
 
   const { data: publications = [], isLoading } = useQuery<Publication[]>({
-    queryKey: searchQuery 
-      ? ["/api/publications/search", { q: searchQuery }]
-      : ["/api/publications"],
+    queryKey: ["/api/publications/search", searchParams],
   });
 
   return (
@@ -54,11 +56,13 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Search */}
+        {/* Search and Filters */}
         <div className="mb-8">
           <SearchFilter 
-            onSearch={setSearchQuery}
-            placeholder="Search publications by title, author or keywords..."
+            onSearch={(query) => setSearchParams(prev => ({ ...prev, query }))}
+            onTypeFilter={(type) => setSearchParams(prev => ({ ...prev, type }))}
+            onYearFilter={(year) => setSearchParams(prev => ({ ...prev, year }))}
+            placeholder="Search publications by title, author, or keywords..."
           />
         </div>
 
@@ -74,7 +78,7 @@ export default function HomePage() {
             <PublicationList 
               publications={publications}
               isLoading={isLoading}
-              showActions={false}
+              showActions={user?.isAdmin}
             />
           </CardContent>
         </Card>
