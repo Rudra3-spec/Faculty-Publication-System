@@ -37,6 +37,7 @@ import PublicationForm from "@/components/publication-form";
 import PublicationList from "@/components/publication-list";
 import { Publication } from "@shared/schema";
 import { Link } from "wouter";
+import ImpactVisualization from "@/components/impact-visualization";
 
 type SummaryFormat = "PDF" | "Word" | "Web";
 type SummaryFilter = "year" | "type" | "area";
@@ -354,7 +355,13 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
-        <div className="flex justify-between items-center mb-6">
+
+        {/* Impact Visualization */}
+        <div className="mt-8">
+          <ImpactVisualization publications={publications} />
+        </div>
+
+        <div className="flex justify-between items-center mb-6 mt-8">
           <h2 className="text-xl font-semibold">Publications</h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
