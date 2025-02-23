@@ -227,12 +227,9 @@ function RegisterForm() {
           name="department"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="flex items-center gap-1">
-                Department
-                <span className="text-red-500">*</span>
-              </FormLabel>
+              <FormLabel>Department</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} placeholder="Optional: Enter your department" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -243,12 +240,9 @@ function RegisterForm() {
           name="designation"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="flex items-center gap-1">
-                Designation
-                <span className="text-red-500">*</span>
-              </FormLabel>
+              <FormLabel>Designation</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} placeholder="Optional: Enter your designation" />
               </FormControl>
               <FormMessage />
             </FormItem>
