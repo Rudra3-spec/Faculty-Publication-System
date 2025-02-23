@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Publication } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -26,19 +26,29 @@ import { Edit, Trash2, Download, ExternalLink, Loader2 } from "lucide-react";
 import PublicationForm from "./publication-form";
 
 interface PublicationListProps {
-  publications: Publication[];
-  isLoading: boolean;
-  showActions: boolean;
+  userId?: number;
+  showActions?: boolean;
 }
 
 export default function PublicationList({
-  publications,
-  isLoading,
-  showActions
+  userId,
+  showActions = false
 }: PublicationListProps) {
   const [editPublication, setEditPublication] = useState<Publication | null>(null);
   const [deletePublication, setDeletePublication] = useState<Publication | null>(null);
   const { toast } = useToast();
+
+  const { data: publications = [], isLoading } = useQuery({
+    queryKey: userId ? ["/api/publications", "user", userId] : ["/api/publications"],
+    queryFn: async () => {
+      const res = await apiRequest(
+        "GET", 
+        userId ? `/api/publications/user/${userId}` : "/api/publications"
+      );
+      const data = await res.json();
+      return data as Publication[];
+    }
+  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -46,6 +56,7 @@ export default function PublicationList({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/publications", "user", userId] });
       toast({ title: "Publication deleted successfully" });
       setDeletePublication(null);
     },
@@ -76,7 +87,7 @@ export default function PublicationList({
     );
   }
 
-  if (publications.length === 0) {
+  if (!publications.length) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
