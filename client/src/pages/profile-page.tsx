@@ -764,7 +764,7 @@ export default function ProfilePage() {
                       user?.facebookUrl ||
                       user?.instagramUrl) && (
                       <div>
-                        <h3 className="font-semibold mb-3">Professional Links</h3>
+                        <h3 className="font-semibold mb-2">Professional Links</h3>
                         <div className="flex flex-wrap gap-3">
                           {user?.linkedinUrl && (
                             <a
@@ -835,6 +835,85 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     )}
+                    {/* Social Media Links */}
+                    {(user?.linkedinUrl ||
+                      user?.googleScholarUrl ||
+                      user?.researchGateUrl ||
+                      user?.twitterUrl ||
+                      user?.facebookUrl ||
+                      user?.instagramUrl) && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Professional & Social Media Links</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {user?.linkedinUrl && (
+                            <a
+                              href={user.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiLinkedin className="h-4 w-4" />
+                              LinkedIn
+                            </a>
+                          )}
+                          {user?.googleScholarUrl && (
+                            <a
+                              href={user.googleScholarUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiGooglescholar className="h-4 w-4" />
+                              Google Scholar
+                            </a>
+                          )}
+                          {user?.researchGateUrl && (
+                            <a
+                              href={user.researchGateUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiResearchgate className="h-4 w-4" />
+                              ResearchGate
+                            </a>
+                          )}
+                          {user?.twitterUrl && (
+                            <a
+                              href={user.twitterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiX className="h-4 w-4" />
+                              Twitter
+                            </a>
+                          )}
+                          {user?.facebookUrl && (
+                            <a
+                              href={user.facebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiFacebook className="h-4 w-4" />
+                              Facebook
+                            </a>
+                          )}
+                          {user?.instagramUrl && (
+                            <a
+                              href={user.instagramUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                            >
+                              <SiInstagram className="h-4 w-4" />
+                              Instagram
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     {user?.college && (
                       <div>
                         <h3 className="font-semibold mb-2">Current Institution</h3>
@@ -879,7 +958,7 @@ export default function ProfilePage() {
                         <p className="text-muted-foreground whitespace-pre-line">{user.awards}</p>
                       </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols1 md:grid-cols-2 gap-4">
                       {user?.officeHours && (
                         <div>
                           <h3 className="font-semibold mb-2">Office Hours</h3>
