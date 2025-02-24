@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -57,14 +60,17 @@ app.use((req, res, next) => {
     const port = process.env.PORT || 5000;
     const host = "0.0.0.0"; // Always bind to all network interfaces
 
-    server.listen({
-      port,
-      host,
-      reusePort: true,
-    }, () => {
-      log(`Server started successfully`);
-      log(`Listening on ${host}:${port}`);
-    });
+    server.listen(
+      {
+        port,
+        host,
+        reusePort: true,
+      },
+      () => {
+        log(`Server started successfully`);
+        log(`Listening on ${host}:${port}`);
+      }
+    );
   } catch (error) {
     log(`Failed to start server: ${error}`);
     process.exit(1);
